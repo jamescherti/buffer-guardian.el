@@ -171,21 +171,21 @@ whether this buffer needs to be saved or not, then it must return t."
 (defcustom buffer-guardian-hooks-auto-save-all-buffers
   '(mouse-leave-buffer-hook)
   "List of hook symbols that trigger saving of all modified buffers.
+
 When any of these hooks run, all buffers are saved. For example, to ensure that
 work is not lost when Emacs loses focus or the mouse leaves the current buffer."
   :group 'buffer-guardian
   :type '(repeat symbol)
   :set (lambda (symbol value)
-         (let ((old-value (default-value symbol)))
+         (let ((old-value (when (boundp symbol)
+                            (default-value symbol))))
            (set-default symbol value)
            (when (bound-and-true-p buffer-guardian-mode)
-             (dolist (hook old-value)
-               (remove-hook hook #'buffer-guardian-save-all-buffers))
+             (when old-value
+               (dolist (hook old-value)
+                 (remove-hook hook #'buffer-guardian-save-all-buffers)))
              (dolist (hook value)
                (add-hook hook #'buffer-guardian-save-all-buffers))))))
-
-(defvar buffer-guardian--list-advised-functions nil
-  "Internal variable.")
 
 (defcustom buffer-guardian-functions-auto-save-current-buffer nil
   "List of function symbols to be advised by `buffer-guardian'.
@@ -200,12 +200,14 @@ Set this variable to nil to disable advising altogether."
   :group 'buffer-guardian
   :type '(repeat function)
   :set (lambda (symbol value)
-         (let ((old-value (default-value symbol)))
+         (let ((old-value (when (boundp symbol)
+                            (default-value symbol))))
            (set-default symbol value)
            (when (bound-and-true-p buffer-guardian-mode)
-             (dolist (func old-value)
-               (when (fboundp func)
-                 (advice-remove func #'buffer-guardian--before-advice-save-current-buffer)))
+             (when old-value
+               (dolist (func old-value)
+                 (when (fboundp func)
+                   (advice-remove func #'buffer-guardian--before-advice-save-current-buffer))))
              (setq buffer-guardian--list-advised-functions (copy-sequence value))
              (dolist (func value)
                (when (fboundp func)
@@ -510,7 +512,7 @@ OBJECT can be a frame or a window."
           (advice-remove
            func #'buffer-guardian--before-advice-save-current-buffer))))))
 
-  ;;; Provide
+;;; Provide
 
 (provide 'buffer-guardian)
 
