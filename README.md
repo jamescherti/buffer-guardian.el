@@ -133,7 +133,7 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 ### Advanced
 
-* `buffer-guardian-save-all-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to `'(mouse-leave-buffer-hook)`.
+* `buffer-guardian-save-all-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
 * `buffer-guardian-functions-auto-save-current-buffer`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
