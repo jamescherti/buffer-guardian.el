@@ -87,7 +87,7 @@
                         #'buffer-guardian--minibuffer-setup-hook)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-buffer-change t
+(defcustom buffer-guardian-save-on-buffer-switch t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
   :set (lambda (symbol value)
@@ -169,7 +169,7 @@ This setting is used by `buffer-guardian-predicate'."
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-exclude nil
+(defcustom buffer-guardian-exclude-regexps nil
   "A list of regexps for buffer file name excluded from buffer-guardian.
 When a buffer file name matches any of the regexps it is ignored."
   :group 'buffer-guardian
@@ -182,14 +182,14 @@ Set to 0 or nil to disable."
   :group 'buffer-guardian
   :type 'integer)
 
-(defcustom buffer-guardian-predicates nil
+(defcustom buffer-guardian-predicate-functions nil
   "Predicates, which return nil, when the buffer doesn't need to be saved.
 Predicate functions don't take any arguments. If a predicate doesn't know
 whether this buffer needs to be saved or not, then it must return t."
   :group 'buffer-guardian
   :type '(repeat function))
 
-(defcustom buffer-guardian-hooks-auto-save-all-buffers
+(defcustom buffer-guardian-save-all-trigger-hooks
   '(mouse-leave-buffer-hook)
   "List of hook symbols that trigger saving of all modified buffers.
 
@@ -241,12 +241,12 @@ Set this variable to nil to disable advising altogether."
                   func :before
                   #'buffer-guardian--before-advice-save-current-buffer)))))))
 
-(defun buffer-guardian-exclude-p (filename)
-  "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude'."
+(defun buffer-guardian-exclude-regexps-p (filename)
+  "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
   (and filename
        (seq-some (lambda (regexp)
                    (string-match-p regexp filename))
-                 buffer-guardian-exclude)))
+                 buffer-guardian-exclude-regexps)))
 
 (defun buffer-guardian-predicate (&optional include-non-file-visiting)
   "Determine if the current buffer should be automatically saved.
@@ -257,7 +257,7 @@ specialized symbols for \='org-src and \='edit-indirect buffers.
 Returns: \='org-src, \='edit-indirect, t, or nil."
   (let ((file-name (buffer-file-name)))
     (when (and (buffer-modified-p)
-               (not (buffer-guardian-exclude-p file-name))
+               (not (buffer-guardian-exclude-regexps-p file-name))
                (or (not buffer-guardian-max-buffer-size)
                    (<= buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
@@ -271,7 +271,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                                     (format "Predicate failed: %S" err)
                                     :warning)
                                    nil))))
-                            buffer-guardian-predicates))
+                            buffer-guardian-predicate-functions))
       (cond
        ;; Specialized buffers
        ((and include-non-file-visiting
@@ -376,7 +376,7 @@ OBJECT can be a frame or a window."
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-buffer-change
+  (when (and buffer-guardian-save-on-buffer-switch
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
@@ -394,11 +394,11 @@ OBJECT can be a frame or a window."
   :group 'buffer-guardian
   (let ((settings '(buffer-guardian-save-on-focus-loss
                     buffer-guardian-save-on-minibuffer
-                    buffer-guardian-save-on-buffer-change
+                    buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-change
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
-                    buffer-guardian-hooks-auto-save-all-buffers
+                    buffer-guardian-save-all-trigger-hooks
                     buffer-guardian-functions-auto-save-current-buffer)))
     (dolist (setting settings)
       (funcall (or (get setting 'custom-set) #'set-default)

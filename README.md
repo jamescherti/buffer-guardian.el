@@ -1,4 +1,4 @@
-# buffer-guardian.el - Automatically Save Emacs buffers Without Manual Intervention
+# buffer-guardian.el - Automatically Save Emacs Buffers Without Manual Intervention
 ![Build Status](https://github.com/jamescherti/buffer-guardian.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
@@ -97,7 +97,7 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 * `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when Emacs loses focus.
 * `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
-* `buffer-guardian-save-on-buffer-change` (Default: `t`): Save when `window-buffer-change-functions` runs.
+* `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
 
 ### Timers
@@ -109,12 +109,12 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 * `buffer-guardian-inhibit-saving-remote-files` (Default: `t`): Prevent auto-saving remote files.
 * `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
-* `buffer-guardian-exclude` (Default: `nil`): A list of regular expressions for file names to ignore.
+* `buffer-guardian-exclude-regexps` (Default: `nil`): A list of regular expressions for file names to ignore.
 * `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
 
 ### Advanced
 
-* `buffer-guardian-hooks-auto-save-all-buffers`: A list of hooks that trigger saving all modified buffers. Defaults to `'(mouse-leave-buffer-hook)`.
+* `buffer-guardian-save-all-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to `'(mouse-leave-buffer-hook)`.
 * `buffer-guardian-functions-auto-save-current-buffer`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
