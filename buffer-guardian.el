@@ -1,4 +1,4 @@
-;;; buffer-guardian.el --- Save your work without thinking about it -*- lexical-binding: t -*-
+;;; buffer-guardian.el --- Automatically Save Buffers Without Manual Intervention -*- lexical-binding: t -*-
 
 ;; Author: James Cherti
 ;; URL: https://github.com/jamescherti/jc-dev
@@ -114,7 +114,6 @@
 (defvar buffer-guardian--save-all-buffers-timer nil
   "Internal Timer object for saving all buffers.")
 
-
 (defvar buffer-guardian--save-all-buffers-idle-timer nil
   "Internal timer object for saving all buffers when the user is idle.")
 
@@ -176,9 +175,9 @@ When a buffer file name matches any of the regexps it is ignored."
   :type '(repeat regexp))
 
 (defcustom buffer-guardian-max-buffer-size nil
-  "Maximal size of buffer (in characters), for which buffer-guardian work.
+  "Maximal size of buffer (in characters), for which buffer-guardian works.
 Exists mostly because saving constantly huge buffers can be slow in some cases.
-Set to 0 or nil to disable."
+Set to nil to disable."
   :group 'buffer-guardian
   :type 'integer)
 
@@ -196,7 +195,7 @@ whether this buffer needs to be saved or not, then it must return t."
 When any of these hooks run, all buffers are saved. For example, to ensure that
 work is not lost when Emacs loses focus or the mouse leaves the current buffer."
   :group 'buffer-guardian
-  :type '(repeat symbol)
+  :type '(repeat hook)
   :set (lambda (symbol value)
          (let ((old-value (when (boundp symbol)
                             (default-value symbol))))
@@ -224,22 +223,20 @@ Set this variable to nil to disable advising altogether."
   :group 'buffer-guardian
   :type '(repeat function)
   :set (lambda (symbol value)
-         (let ((old-value (when (boundp symbol)
-                            (default-value symbol))))
-           (set-default symbol value)
-           (when old-value
-             (dolist (func old-value)
-               (when (fboundp func)
-                 (advice-remove
-                  func
-                  #'buffer-guardian--before-advice-save-current-buffer))))
-           (setq buffer-guardian--list-advised-functions (copy-sequence value))
-           (when (bound-and-true-p buffer-guardian-mode)
-             (dolist (func value)
-               (when (fboundp func)
-                 (advice-add
-                  func :before
-                  #'buffer-guardian--before-advice-save-current-buffer)))))))
+         (set-default symbol value)
+         (when buffer-guardian--list-advised-functions
+           (dolist (func buffer-guardian--list-advised-functions)
+             (when (fboundp func)
+               (advice-remove
+                func
+                #'buffer-guardian--before-advice-save-current-buffer))))
+         (setq buffer-guardian--list-advised-functions (copy-sequence value))
+         (when (bound-and-true-p buffer-guardian-mode)
+           (dolist (func value)
+             (when (fboundp func)
+               (advice-add
+                func :before
+                #'buffer-guardian--before-advice-save-current-buffer))))))
 
 (defun buffer-guardian-exclude-regexps-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
@@ -259,7 +256,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
     (when (and (buffer-modified-p)
                (not (buffer-guardian-exclude-regexps-p file-name))
                (or (not buffer-guardian-max-buffer-size)
-                   (<= buffer-guardian-max-buffer-size 0)
+                   (< buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
                (seq-every-p (lambda (pred)
                               (when (functionp pred)
@@ -304,25 +301,29 @@ By default, it only saves when the file exists on the disk."
             (cond
              ((and (eq predicate-result 'org-src)
                    (fboundp 'org-edit-src-save))
-              (funcall 'org-edit-src-save))
+              (funcall 'org-edit-src-save)
+              (when buffer-guardian-verbose
+                (message "[buffer-guardian] Save: '%s'" (buffer-name))))
 
              ((and (eq predicate-result 'edit-indirect)
                    (fboundp 'edit-indirect--commit))
-              (funcall 'edit-indirect--commit))
+              (funcall 'edit-indirect--commit)
+              (when buffer-guardian-verbose
+                (message "[buffer-guardian] Save: '%s'" (buffer-name))))
 
-             (predicate-result
-              (let ((inhibit-message (not buffer-guardian-verbose)))
-                (if (verify-visited-file-modtime (current-buffer))
-                    (save-buffer)
-                  (message
-                   (concat "[buffer-guardian] Warning: Automatic save skipped "
-                           "for '%s' because the file was modified externally.")
-                   (buffer-file-name (buffer-base-buffer)))))))
-
-            (when buffer-guardian-verbose
-              (message
-               "[buffer-guardian] '%s'"
-               (buffer-file-name (buffer-base-buffer))))))))))
+             (t
+              (if (verify-visited-file-modtime (current-buffer))
+                  (progn
+                    (let ((inhibit-message (not buffer-guardian-verbose)))
+                      (save-buffer))
+                    (when buffer-guardian-verbose
+                      (message "[buffer-guardian] Save: '%s'"
+                               (buffer-file-name (buffer-base-buffer)))))
+                (when buffer-guardian-verbose
+                  (message (concat "[buffer-guardian] Warning: Automatic "
+                                   "save skipped for '%s' because the file "
+                                   "was modified externally.")
+                           (buffer-file-name (buffer-base-buffer)))))))))))))
 
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
