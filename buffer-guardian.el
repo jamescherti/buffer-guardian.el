@@ -371,10 +371,7 @@ OBJECT can be a frame or a window."
               (when buffer-guardian--previous-buffer
                 (when (buffer-live-p buffer-guardian--previous-buffer)
                   (buffer-guardian-save-buffer-maybe
-                   buffer-guardian--previous-buffer))
-
-                ;; Reset
-                (setq buffer-guardian--previous-buffer nil))
+                   buffer-guardian--previous-buffer)))
 
               ;; Push the current buffer
               (setq buffer-guardian--previous-buffer buffer))))))))
