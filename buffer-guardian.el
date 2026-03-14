@@ -144,7 +144,8 @@ If set to nil, this feature is disabled."
            (setq buffer-guardian--save-all-buffers-idle-timer nil))
          (when (and value (bound-and-true-p buffer-guardian-mode))
            (setq buffer-guardian--save-all-buffers-idle-timer
-                 (run-with-idle-timer value value #'buffer-guardian-save-all-buffers))))
+                 (run-with-idle-timer
+                  value value #'buffer-guardian-save-all-buffers))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-inhibit-saving-remote-files t
@@ -222,12 +223,16 @@ Set this variable to nil to disable advising altogether."
            (when old-value
              (dolist (func old-value)
                (when (fboundp func)
-                 (advice-remove func #'buffer-guardian--before-advice-save-current-buffer))))
+                 (advice-remove
+                  func
+                  #'buffer-guardian--before-advice-save-current-buffer))))
            (setq buffer-guardian--list-advised-functions (copy-sequence value))
            (when (bound-and-true-p buffer-guardian-mode)
              (dolist (func value)
                (when (fboundp func)
-                 (advice-add func :before #'buffer-guardian--before-advice-save-current-buffer)))))))
+                 (advice-add
+                  func :before
+                  #'buffer-guardian--before-advice-save-current-buffer)))))))
 
 (defun buffer-guardian-exclude-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude'."
@@ -315,7 +320,8 @@ By default, it only saves when the file exists on the disk."
 
           (when buffer-guardian-verbose
             (message
-             "[buffer-guardian] '%s'" (buffer-file-name (buffer-base-buffer)))))))))
+             "[buffer-guardian] '%s'"
+             (buffer-file-name (buffer-base-buffer)))))))))
 
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
@@ -330,9 +336,9 @@ BUFFER-LIST is the list of buffers."
 (defun buffer-guardian--on-focus-change ()
   "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
   (when (and buffer-guardian-save-on-focus-loss
-             (or (not (fboundp 'frame-focus-state)) ; emacs <= 26.1
-                 ;; The frame is unfocused
-                 (not (frame-focus-state))))
+             ;; The frame is unfocused
+             (not (when (fboundp 'frame-focus-state)
+                    (frame-focus-state))))
     (buffer-guardian-save-all-buffers)))
 
 (defun buffer-guardian--minibuffer-setup-hook ()
