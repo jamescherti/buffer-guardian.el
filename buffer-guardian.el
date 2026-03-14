@@ -41,22 +41,60 @@
 (defcustom buffer-guardian-save-on-focus-loss t
   "Save the current buffer when Emacs loses focus."
   :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (if value
+               (add-function :after after-focus-change-function
+                             #'buffer-guardian--on-focus-change)
+             (remove-function after-focus-change-function
+                              #'buffer-guardian--on-focus-change))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-on-minibuffer t
   "Save the current buffer when the minibuffer is opened."
   :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (if value
+               (add-hook 'minibuffer-setup-hook
+                         #'buffer-guardian--minibuffer-setup-hook)
+             (remove-hook 'minibuffer-setup-hook
+                          #'buffer-guardian--minibuffer-setup-hook))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-on-buffer-change t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (if value
+               (add-hook 'window-buffer-change-functions
+                         #'buffer-guardian--window-buffer-change-functions)
+             (remove-hook 'window-buffer-change-functions
+                          #'buffer-guardian--window-buffer-change-functions))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-on-window-change t
   "Save the current buffer when `window-selection-change-functions' runs."
   :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (if value
+               (add-hook 'window-selection-change-functions
+                         #'buffer-guardian--window-selection-change)
+             (remove-hook 'window-selection-change-functions
+                          #'buffer-guardian--window-selection-change))))
   :group 'buffer-guardian)
+
+(defvar buffer-guardian--save-all-buffers-timer nil
+  "Internal Timer object for saving all buffers.")
+
+(defvar buffer-guardian--save-all-buffers-idle-timer nil
+  "Internal timer object for saving all buffers when the user is idle.")
 
 (defcustom buffer-guardian-save-all-buffers-interval nil
   "Interval in seconds for automatically saving all buffers.
@@ -66,6 +104,15 @@ repeating the operation at the specified interval.
 If set to nil, this feature is disabled."
   :type '(choice (integer :tag "Seconds")
                  (const :tag "Disabled" nil))
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (when buffer-guardian--save-all-buffers-timer
+             (cancel-timer buffer-guardian--save-all-buffers-timer)
+             (setq buffer-guardian--save-all-buffers-timer nil))
+           (when value
+             (setq buffer-guardian--save-all-buffers-timer
+                   (run-with-timer value value #'buffer-guardian-save-all-buffers)))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-all-buffers-idle nil
@@ -76,6 +123,15 @@ at the specified interval.
 If set to nil, this feature is disabled."
   :type '(choice (integer :tag "Seconds")
                  (const :tag "Disabled" nil))
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (when (bound-and-true-p buffer-guardian-mode)
+           (when buffer-guardian--save-all-buffers-idle-timer
+             (cancel-timer buffer-guardian--save-all-buffers-idle-timer)
+             (setq buffer-guardian--save-all-buffers-idle-timer nil))
+           (when value
+             (setq buffer-guardian--save-all-buffers-idle-timer
+                   (run-with-idle-timer value value #'buffer-guardian-save-all-buffers)))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-inhibit-saving-remote-files t
@@ -119,10 +175,20 @@ whether this buffer needs to be saved or not, then it must return t."
 When any of these hooks run, all buffers are saved. For example, to ensure that
 work is not lost when Emacs loses focus or the mouse leaves the current buffer."
   :group 'buffer-guardian
-  :type '(repeat symbol))
+  :type '(repeat symbol)
+  :set (lambda (symbol value)
+         (let ((old-value (default-value symbol)))
+           (set-default symbol value)
+           (when (bound-and-true-p buffer-guardian-mode)
+             (dolist (hook old-value)
+               (remove-hook hook #'buffer-guardian-save-all-buffers))
+             (dolist (hook value)
+               (add-hook hook #'buffer-guardian-save-all-buffers))))))
 
-;; TODO this should be changed by the window change hook, maybe?
-(defvar buffer-guardian-functions-auto-save-current-buffer '()
+(defvar buffer-guardian--list-advised-functions nil
+  "Internal variable.")
+
+(defcustom buffer-guardian-functions-auto-save-current-buffer nil
   "List of function symbols to be advised by `buffer-guardian'.
 
 A :before advice will be added to each function in this list so that save the
@@ -131,15 +197,20 @@ current buffer before the function executes.
 This mechanism allows automatic buffer saving to be triggered by specific
 commands or operations (e.g., window switching or navigation).
 
-Set this variable to nil to disable advising altogether.")
-
-(defvar buffer-guardian--save-all-buffers-timer nil
-  "Timer object for saving all buffers.")
-
-(defvar buffer-guardian--save-all-buffers-idle-timer nil
-  "Timer object for saving all buffers when the user is idle.")
-
-(defvar buffer-guardian--list-advised-functions nil)
+Set this variable to nil to disable advising altogether."
+  :group 'buffer-guardian
+  :type '(repeat function)
+  :set (lambda (symbol value)
+         (let ((old-value (default-value symbol)))
+           (set-default symbol value)
+           (when (bound-and-true-p buffer-guardian-mode)
+             (dolist (func old-value)
+               (when (fboundp func)
+                 (advice-remove func #'buffer-guardian--before-advice-save-current-buffer)))
+             (setq buffer-guardian--list-advised-functions (copy-sequence value))
+             (dolist (func value)
+               (when (fboundp func)
+                 (advice-add func :before #'buffer-guardian--before-advice-save-current-buffer)))))))
 
 (defun buffer-guardian-exclude-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude'."
