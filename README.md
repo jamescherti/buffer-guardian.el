@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The `buffer-guardian` package provides a global mode that automatically saves buffers without requiring manual intervention.
+The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
 By default, it saves a buffer when the user:
 - Switches to another buffer or window
@@ -30,7 +30,9 @@ To install *buffer-guardian* with `straight.el`:
   :straight (buffer-guardian
              :type git
              :host github
-             :repo "jamescherti/buffer-guardian.el"))
+             :repo "jamescherti/buffer-guardian.el")
+  :hook
+  (after-init . buffer-guardian-mode))
 ```
 
 ### Alternative installation: use-package and :vc (Built-in feature in Emacs version >= 30)
@@ -40,7 +42,9 @@ To install *buffer-guardian* with `use-package` and `:vc` (Emacs >= 30):
 ``` emacs-lisp
 (use-package buffer-guardian
   :vc (:url "https://github.com/jamescherti/buffer-guardian.el"
-       :rev :newest))
+       :rev :newest)
+  :hook
+  (after-init . buffer-guardian-mode))
 ```
 
 ### Alternative installation: Doom Emacs
@@ -58,8 +62,7 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 ```elisp
 (after! buffer-guardian
   ;; TODO: setq options
-  ;; TODO: Load the mode here
-  )
+  (buffer-guardian-mode))
 ```
 
 3. Run the `doom sync` command:
