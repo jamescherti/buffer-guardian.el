@@ -33,7 +33,7 @@
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-focus-change t
+(defcustom buffer-guardian-save-on-focus-loss t
   "Save the current buffer when Emacs loses focus."
   :type 'boolean
   :group 'buffer-guardian)
@@ -43,12 +43,12 @@
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-when-leaving-buffer t
+(defcustom buffer-guardian-save-on-buffer-switch t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-when-leaving-window t
+(defcustom buffer-guardian-save-on-window-change t
   "Save the current buffer when `window-selection-change-functions' runs."
   :type 'boolean
   :group 'buffer-guardian)
@@ -265,7 +265,7 @@ save the buffer without prompting or displaying messages."
 
 (defun buffer-guardian--on-focus-change ()
   "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
-  (when (and buffer-guardian-save-on-focus-change
+  (when (and buffer-guardian-save-on-focus-loss
              (not (frame-focus-state)))
     (buffer-guardian-save-all-buffers)))
 
@@ -339,11 +339,11 @@ OBJECT can be a frame or a window."
             (add-hook hook #'buffer-guardian-save-all-buffers)))
 
         ;; Window buffer change
-        (when buffer-guardian-save-when-leaving-buffer
+        (when buffer-guardian-save-on-buffer-switch
           (add-hook 'window-buffer-change-functions
                     #'buffer-guardian--window-buffer-change-functions))
 
-        (when buffer-guardian-save-when-leaving-window
+        (when buffer-guardian-save-on-window-change
           (add-hook 'window-selection-change-functions
                     #'buffer-guardian--window-selection-change))
 
