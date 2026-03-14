@@ -254,7 +254,7 @@ If INCLUDE-NON-FILE-VISITING is non-nil, the predicate recognizes and returns
 specialized symbols for \='org-src and \='edit-indirect buffers.
 
 Returns: \='org-src, \='edit-indirect, t, or nil."
-  (let* ((file-name (buffer-file-name)))
+  (let ((file-name (buffer-file-name)))
     (when (and (buffer-modified-p)
                (not (buffer-guardian-exclude-p file-name))
                (or (not buffer-guardian-max-buffer-size)
@@ -293,34 +293,33 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 (defun buffer-guardian-save-buffer-maybe (&optional buffer)
   "Save BUFFER if it is visiting a file that is existing on the disk.
 By default, it only saves when the file exists on the disk."
-  (unless buffer
-    (setq buffer (current-buffer)))
-  (when (buffer-live-p buffer)
-    (with-current-buffer buffer
-      (let ((predicate-result (buffer-guardian-predicate :include-all-buffers)))
-        (when predicate-result
-          (cond
-           ((and (eq predicate-result 'org-src)
-                 (fboundp 'org-edit-src-save))
-            (funcall 'org-edit-src-save))
+  (let ((target-buffer (or buffer (current-buffer))))
+    (when (buffer-live-p target-buffer)
+      (with-current-buffer target-buffer
+        (let ((predicate-result (buffer-guardian-predicate t)))
+          (when predicate-result
+            (cond
+             ((and (eq predicate-result 'org-src)
+                   (fboundp 'org-edit-src-save))
+              (funcall 'org-edit-src-save))
 
-           ((and (eq predicate-result 'edit-indirect)
-                 (fboundp 'edit-indirect--commit))
-            (funcall 'edit-indirect--commit))
+             ((and (eq predicate-result 'edit-indirect)
+                   (fboundp 'edit-indirect--commit))
+              (funcall 'edit-indirect--commit))
 
-           (predicate-result
-            (let ((inhibit-message (not buffer-guardian-verbose)))
-              (if (verify-visited-file-modtime (current-buffer))
-                  (save-buffer)
-                (message
-                 (concat "[buffer-guardian] Warning: Automatic save skipped "
-                         "for '%s' because the file was modified externally.")
-                 (buffer-file-name (buffer-base-buffer)))))))
+             (predicate-result
+              (let ((inhibit-message (not buffer-guardian-verbose)))
+                (if (verify-visited-file-modtime (current-buffer))
+                    (save-buffer)
+                  (message
+                   (concat "[buffer-guardian] Warning: Automatic save skipped "
+                           "for '%s' because the file was modified externally.")
+                   (buffer-file-name (buffer-base-buffer)))))))
 
-          (when buffer-guardian-verbose
-            (message
-             "[buffer-guardian] '%s'"
-             (buffer-file-name (buffer-base-buffer)))))))))
+            (when buffer-guardian-verbose
+              (message
+               "[buffer-guardian] '%s'"
+               (buffer-file-name (buffer-base-buffer))))))))))
 
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
@@ -349,42 +348,28 @@ BUFFER-LIST is the list of buffers."
       (when (buffer-live-p buffer)
         (buffer-guardian-save-buffer-maybe buffer)))))
 
-(defvar buffer-guardian--previous-buffer nil)
+(defvar buffer-guardian--previous-buffer nil
+  "Internal. Tracks the last seen buffer for auto-saving on window changes.")
 
 (defun buffer-guardian--on-buffer-change (&optional object)
   "Function called by `window-buffer-change-functions'.
 OBJECT can be a frame or a window."
   (let* ((is-frame (frame-live-p object))
-         (frame (if is-frame
-                    object
-                  (selected-frame)))
+         (frame (if is-frame object (selected-frame)))
          (window (cond
-                  ;; Frame
-                  (is-frame
-                   (with-selected-frame object
-                     (selected-window)))
-                  ;; Window
-                  ((window-live-p object)
-                   object)
-                  ;; Current window
-                  (t
-                   (selected-window)))))
+                  (is-frame (frame-selected-window object))
+                  ((window-live-p object) object)
+                  (t (selected-window)))))
     (when (and frame window)
-      (with-selected-frame frame
-        (with-selected-window window
-          (let ((buffer (window-buffer)))
-            (when (and buffer
-                       (buffer-live-p buffer)
-                       (or (not buffer-guardian--previous-buffer)
-                           (not (eq buffer buffer-guardian--previous-buffer))))
-              ;; Save previous buffers
-              (when buffer-guardian--previous-buffer
-                (when (buffer-live-p buffer-guardian--previous-buffer)
-                  (buffer-guardian-save-buffer-maybe
-                   buffer-guardian--previous-buffer)))
-
-              ;; Push the current buffer
-              (setq buffer-guardian--previous-buffer buffer))))))))
+      (let ((buffer (window-buffer window)))
+        (when (buffer-live-p buffer)
+          (unless (eq buffer buffer-guardian--previous-buffer)
+            ;; Save previous buffer
+            (when (buffer-live-p buffer-guardian--previous-buffer)
+              (buffer-guardian-save-buffer-maybe
+               buffer-guardian--previous-buffer))
+            ;; Update tracker to current buffer
+            (setq buffer-guardian--previous-buffer buffer)))))))
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
