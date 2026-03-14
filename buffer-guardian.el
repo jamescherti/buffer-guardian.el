@@ -43,7 +43,7 @@
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-buffer-switch t
+(defcustom buffer-guardian-save-on-buffer-change t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
   :group 'buffer-guardian)
@@ -91,7 +91,7 @@ This setting is used by `buffer-guardian-predicate'."
   "A list of regexps for buffer file name excluded from buffer-guardian.
 When a buffer file name matches any of the regexps it is ignored."
   :group 'buffer-guardian
-  :type '(repeat (choice regexp)))
+  :type '(repeat regexp))
 
 (defcustom buffer-guardian-max-buffer-size nil
   "Maximal size of buffer (in characters), for which buffer-guardian work.
@@ -326,13 +326,13 @@ OBJECT can be a frame or a window."
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
-  (when buffer-guardian-save-on-window-change
+  (when buffer-guardian-save-on-buffer-change
     (buffer-guardian--on-buffer-change object)))
 
 (defun buffer-guardian--window-selection-change (object)
   "Run on window change in OBJECT (frame or window)."
   (when buffer-guardian-save-on-window-change
-    (buffer-guardian--window-buffer-change-functions object)))
+    (buffer-guardian--on-buffer-change object)))
 
 ;;;###autoload
 (define-minor-mode buffer-guardian-mode
@@ -349,13 +349,11 @@ OBJECT can be a frame or a window."
             (add-hook hook #'buffer-guardian-save-all-buffers)))
 
         ;; Window buffer change
-        (when buffer-guardian-save-on-buffer-switch
-          (add-hook 'window-buffer-change-functions
-                    #'buffer-guardian--window-buffer-change-functions))
+        (add-hook 'window-buffer-change-functions
+                  #'buffer-guardian--window-buffer-change-functions)
 
-        (when buffer-guardian-save-on-window-change
-          (add-hook 'window-selection-change-functions
-                    #'buffer-guardian--window-selection-change))
+        (add-hook 'window-selection-change-functions
+                  #'buffer-guardian--window-selection-change)
 
         ;; Minibuffer setup
         ;; ----------------
