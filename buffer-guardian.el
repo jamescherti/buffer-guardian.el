@@ -2,7 +2,7 @@
 
 ;; Author: James Cherti
 ;; URL: https://github.com/jamescherti/jc-dev
-;; Package-Requires: ((emacs "29.1"))
+;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: maint
 ;; Version: 0.0.9
 ;; SPDX-License-Identifier: GPL-3.0-or-later
@@ -327,7 +327,9 @@ BUFFER-LIST is the list of buffers."
 (defun buffer-guardian--on-focus-change ()
   "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
   (when (and buffer-guardian-save-on-focus-loss
-             (not (frame-focus-state)))
+             (or (not (fboundp 'frame-focus-state)) ; emacs <= 26.1
+                 ;; The frame is unfocused
+                 (not (frame-focus-state))))
     (buffer-guardian-save-all-buffers)))
 
 (defun buffer-guardian--minibuffer-setup-hook ()
