@@ -221,8 +221,8 @@ By default, it only saves when the file exists on the disk."
                  (buffer-file-name (buffer-base-buffer)))))))
 
           (when buffer-guardian-verbose
-            (message "[buffer-guardian] '%s'"
-                     (buffer-file-name (buffer-base-buffer)))))))))
+            (message
+             "[buffer-guardian] '%s'" (buffer-file-name (buffer-base-buffer)))))))))
 
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
@@ -280,7 +280,7 @@ save the buffer without prompting or displaying messages."
 
 (defvar buffer-guardian--previous-buffer nil)
 
-(defun buffer-guardian--window-buffer-change-functions (&optional object)
+(defun buffer-guardian--on-buffer-change (&optional object)
   "Function called by `window-buffer-change-functions'.
 OBJECT can be a frame or a window."
   (when (bound-and-true-p persist-text-scale-mode)
@@ -324,9 +324,15 @@ OBJECT can be a frame or a window."
 
 (defvar buffer-guardian--previous-window nil)
 
+(defun buffer-guardian--window-buffer-change-functions (object)
+  "Run on window change in OBJECT (frame or window)."
+  (when buffer-guardian-save-on-window-change
+    (buffer-guardian--on-buffer-change object)))
+
 (defun buffer-guardian--window-selection-change (object)
   "Run on window change in OBJECT (frame or window)."
-  (buffer-guardian--window-buffer-change-functions object))
+  (when buffer-guardian-save-on-window-change
+    (buffer-guardian--window-buffer-change-functions object)))
 
 ;;;###autoload
 (define-minor-mode buffer-guardian-mode
