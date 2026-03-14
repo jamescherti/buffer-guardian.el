@@ -10,12 +10,12 @@ By default, it saves a buffer when the user:
 - Emacs loses focus
 - The minibuffer is opened
 
-In addition to regular file buffers, `buffer-guardian` also handles specialized editing buffers such as `org-src` and `edit-indirect`. These buffers are temporary editing environments that are linked to another underlying buffer.
-
 Other feature that are disabled by default:
 - Excludes remote files, nonexistent files, and very large files by default
 - Supports custom exclusion rules using regular expressions or predicate
   functions
+
+In addition to regular file buffers, `buffer-guardian` also handles specialized editing buffers such as `org-src` and `edit-indirect`. These buffers are temporary editing environments that are linked to another underlying buffer.
 
 ## Installation
 
