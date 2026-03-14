@@ -5,11 +5,12 @@
 
 The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
-**By default, `buffer-guardian-mode` saves a buffer when the user:**
-- Switches to another buffer
-- Switches to another window or frame
-- Emacs loses focus
-- The minibuffer is opened
+**By default, `buffer-guardian-mode` saves a buffer when:**
+- Switching to another buffer.
+- Switching to another window or frame.
+- The mouse pointer leaves the current window.
+- Emacs loses focus.
+- The minibuffer is opened.
 
 In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
 
