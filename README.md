@@ -15,7 +15,6 @@ To install *buffer-guardian* with `straight.el`:
 2. Add the following code to the Emacs init file:
 ```emacs-lisp
 (use-package buffer-guardian
-  :ensure t
   :straight (buffer-guardian
              :type git
              :host github
@@ -28,7 +27,6 @@ To install *buffer-guardian* with `use-package` and `:vc` (Emacs >= 30):
 
 ``` emacs-lisp
 (use-package buffer-guardian
-  :ensure t
   :vc (:url "https://github.com/jamescherti/buffer-guardian.el"
        :rev :newest))
 ```
