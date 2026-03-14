@@ -221,8 +221,8 @@ By default, it only saves when the file exists on the disk."
                  (buffer-file-name (buffer-base-buffer)))))))
 
           (when buffer-guardian-verbose
-            (message
-             "[buffer-guardian] '%s'" (buffer-file-name (buffer-base-buffer)))))))))
+            (message "[buffer-guardian] '%s'"
+                     (buffer-file-name (buffer-base-buffer)))))))))
 
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
@@ -272,7 +272,9 @@ save the buffer without prompting or displaying messages."
 (defun buffer-guardian--minibuffer-setup-hook ()
   "Save the buffer whenever the minibuffer is open."
   (when buffer-guardian-save-on-minibuffer
-    (let ((buffer (window-buffer (minibuffer-selected-window))))
+    (let* ((window (minibuffer-selected-window))
+           (buffer (when window
+                     (window-buffer window))))
       (when (buffer-live-p buffer)
         (buffer-guardian-save-buffer-maybe buffer)))))
 
@@ -301,16 +303,18 @@ OBJECT can be a frame or a window."
         (with-selected-frame frame
           (with-selected-window window
             (when-let* ((buffer (window-buffer)))
-              (when (and (buffer-live-p buffer)
-                         (or (not buffer-guardian--previous-buffer)
-                             (not (eq buffer buffer-guardian--previous-buffer))))
+              (when (and
+                     (buffer-live-p buffer)
+                     (or (not buffer-guardian--previous-buffer)
+                         (not (eq buffer buffer-guardian--previous-buffer))))
                 ;; Save previous buffers
                 (when buffer-guardian--previous-buffer
                   ;; (message "[BUFFER-WINDOW DEBUG] SAVE: %S"
                   ;;          buffer-guardian--previous-buffer)
 
                   (when (buffer-live-p buffer-guardian--previous-buffer)
-                    (buffer-guardian-save-buffer-maybe buffer-guardian--previous-buffer))
+                    (buffer-guardian-save-buffer-maybe
+                     buffer-guardian--previous-buffer))
 
                   ;; Reset
                   (setq buffer-guardian--previous-buffer nil))
@@ -375,8 +379,9 @@ OBJECT can be a frame or a window."
         ;; ----------------
         ;; TODO: store a copy of the function in an internal variable
         (when buffer-guardian-functions-auto-save-current-buffer
-          (setq buffer-guardian--list-advised-functions
-                (copy-sequence buffer-guardian-functions-auto-save-current-buffer))
+          (setq
+           buffer-guardian--list-advised-functions
+           (copy-sequence buffer-guardian-functions-auto-save-current-buffer))
           (dolist (func buffer-guardian-functions-auto-save-current-buffer)
             (when (fboundp func)
               (advice-add
@@ -397,7 +402,8 @@ OBJECT can be a frame or a window."
 
     ;; Minibuffer setup
     ;; ----------------
-    (remove-hook 'minibuffer-setup-hook #'buffer-guardian--minibuffer-setup-hook)
+    (remove-hook 'minibuffer-setup-hook
+                 #'buffer-guardian--minibuffer-setup-hook)
 
     ;; Disable: Focus Change
     ;; ---------------------
