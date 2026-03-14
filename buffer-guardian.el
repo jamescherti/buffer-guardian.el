@@ -47,6 +47,8 @@
 
 (require 'seq)
 
+;;; Customizations
+
 (defgroup buffer-guardian nil
   "Customization options for `buffer-guardian-mode'."
   :group 'buffer-guardian
@@ -290,6 +292,66 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
              (file-exists-p file-name)
            t)))))))
 
+(defun buffer-guardian--before-advice-save-current-buffer (&rest _)
+  "Save current buffers."
+  (buffer-guardian-save-buffer-maybe (current-buffer)))
+
+(defun buffer-guardian--on-focus-change ()
+  "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
+  (when (and buffer-guardian-save-on-focus-loss
+             ;; The frame is unfocused
+             (not (when (fboundp 'frame-focus-state)
+                    (frame-focus-state))))
+    (buffer-guardian-save-all-buffers)))
+
+(defun buffer-guardian--minibuffer-setup-hook ()
+  "Save the buffer whenever the minibuffer is open."
+  (when buffer-guardian-save-on-minibuffer
+    (let* ((window (minibuffer-selected-window))
+           (buffer (when window
+                     (window-buffer window))))
+      (when (buffer-live-p buffer)
+        (buffer-guardian-save-buffer-maybe buffer)))))
+
+(defvar buffer-guardian--previous-buffer nil
+  "Internal. Tracks the last seen buffer for auto-saving on window changes.")
+
+;;; Internal functions
+
+(defun buffer-guardian--on-buffer-change (&optional object)
+  "Function called by `window-buffer-change-functions'.
+OBJECT can be a frame or a window."
+  (let* ((is-frame (frame-live-p object))
+         (frame (if is-frame object (selected-frame)))
+         (window (cond
+                  (is-frame (frame-selected-window object))
+                  ((window-live-p object) object)
+                  (t (selected-window)))))
+    (when (and frame window)
+      (let ((buffer (window-buffer window)))
+        (when (buffer-live-p buffer)
+          (unless (eq buffer buffer-guardian--previous-buffer)
+            ;; Save previous buffer
+            (when (buffer-live-p buffer-guardian--previous-buffer)
+              (buffer-guardian-save-buffer-maybe
+               buffer-guardian--previous-buffer))
+            ;; Update tracker to current buffer
+            (setq buffer-guardian--previous-buffer buffer)))))))
+
+(defun buffer-guardian--window-buffer-change-functions (object)
+  "Run on window change in OBJECT (frame or window)."
+  (when (and buffer-guardian-save-on-buffer-switch
+             (bound-and-true-p buffer-guardian-mode))
+    (buffer-guardian--on-buffer-change object)))
+
+(defun buffer-guardian--window-selection-change (object)
+  "Run on window change in OBJECT (frame or window)."
+  (when (and buffer-guardian-save-on-window-change
+             (bound-and-true-p buffer-guardian-mode))
+    (buffer-guardian--on-buffer-change object)))
+
+;;; Functions
+
 (defun buffer-guardian-save-buffer-maybe (&optional buffer)
   "Save BUFFER if it is visiting a file that is existing on the disk.
 By default, it only saves when the file exists on the disk."
@@ -331,61 +393,7 @@ BUFFER-LIST is the list of buffers."
   (dolist (buffer (or buffer-list (buffer-list)))
     (buffer-guardian-save-buffer-maybe buffer)))
 
-(defun buffer-guardian--before-advice-save-current-buffer (&rest _)
-  "Save current buffers."
-  (buffer-guardian-save-buffer-maybe (current-buffer)))
-
-(defun buffer-guardian--on-focus-change ()
-  "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
-  (when (and buffer-guardian-save-on-focus-loss
-             ;; The frame is unfocused
-             (not (when (fboundp 'frame-focus-state)
-                    (frame-focus-state))))
-    (buffer-guardian-save-all-buffers)))
-
-(defun buffer-guardian--minibuffer-setup-hook ()
-  "Save the buffer whenever the minibuffer is open."
-  (when buffer-guardian-save-on-minibuffer
-    (let* ((window (minibuffer-selected-window))
-           (buffer (when window
-                     (window-buffer window))))
-      (when (buffer-live-p buffer)
-        (buffer-guardian-save-buffer-maybe buffer)))))
-
-(defvar buffer-guardian--previous-buffer nil
-  "Internal. Tracks the last seen buffer for auto-saving on window changes.")
-
-(defun buffer-guardian--on-buffer-change (&optional object)
-  "Function called by `window-buffer-change-functions'.
-OBJECT can be a frame or a window."
-  (let* ((is-frame (frame-live-p object))
-         (frame (if is-frame object (selected-frame)))
-         (window (cond
-                  (is-frame (frame-selected-window object))
-                  ((window-live-p object) object)
-                  (t (selected-window)))))
-    (when (and frame window)
-      (let ((buffer (window-buffer window)))
-        (when (buffer-live-p buffer)
-          (unless (eq buffer buffer-guardian--previous-buffer)
-            ;; Save previous buffer
-            (when (buffer-live-p buffer-guardian--previous-buffer)
-              (buffer-guardian-save-buffer-maybe
-               buffer-guardian--previous-buffer))
-            ;; Update tracker to current buffer
-            (setq buffer-guardian--previous-buffer buffer)))))))
-
-(defun buffer-guardian--window-buffer-change-functions (object)
-  "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-buffer-switch
-             (bound-and-true-p buffer-guardian-mode))
-    (buffer-guardian--on-buffer-change object)))
-
-(defun buffer-guardian--window-selection-change (object)
-  "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-window-change
-             (bound-and-true-p buffer-guardian-mode))
-    (buffer-guardian--on-buffer-change object)))
+;;; Mode
 
 ;;;###autoload
 (define-minor-mode buffer-guardian-mode
