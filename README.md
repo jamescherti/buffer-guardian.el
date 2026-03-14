@@ -19,7 +19,6 @@ In addition to regular file-visiting buffers, `buffer-guardian-mode` also handle
 Features enabled by default:
 * Save the current buffer when switching to another buffer. (Variable: `buffer-guardian-save-on-buffer-switch`)
 * Save the current buffer when switching to another window or frame. (Variable: `buffer-guardian-save-on-window-change`)
-* Save the current buffer when the mouse pointer leaves its window. (Variable: `buffer-guardian-save-on-mouse-leave`)
 * Save the current buffer when the minibuffer is opened. (Variable: `buffer-guardian-save-on-minibuffer`)
 * Save all modified buffers when Emacs loses focus. (Variable: `buffer-guardian-save-on-focus-loss`)
 
@@ -113,7 +112,6 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
 * `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
-* `buffer-guardian-save-on-mouse-leave` (Default: `t`): Save the current buffer when the mouse pointer leaves its window.
 
 ### Timers
 

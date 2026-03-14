@@ -107,21 +107,13 @@
   :set (lambda (symbol value)
          (set-default symbol value)
          (if (and value (bound-and-true-p buffer-guardian-mode))
-             (add-hook 'window-selection-change-functions
-                       #'buffer-guardian--window-selection-change)
+             (progn
+               (add-hook 'window-selection-change-functions
+                         #'buffer-guardian--window-selection-change)
+               (add-hook 'mouse-leave-buffer-hook
+                         #'buffer-guardian--mouse-leave-buffer-hook))
            (remove-hook 'window-selection-change-functions
-                        #'buffer-guardian--window-selection-change)))
-  :group 'buffer-guardian)
-
-(defcustom buffer-guardian-save-on-mouse-leave t
-  "Save the current buffer when the mouse pointer leaves it.
-Uses `mouse-leave-buffer-hook'."
-  :type 'boolean
-  :set (lambda (symbol value)
-         (set-default symbol value)
-         (if (and value (bound-and-true-p buffer-guardian-mode))
-             (add-hook 'mouse-leave-buffer-hook
-                       #'buffer-guardian--mouse-leave-buffer-hook)
+                        #'buffer-guardian--window-selection-change)
            (remove-hook 'mouse-leave-buffer-hook
                         #'buffer-guardian--mouse-leave-buffer-hook)))
   :group 'buffer-guardian)
@@ -325,11 +317,13 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 
 (defun buffer-guardian--before-advice-save-current-buffer (&rest _)
   "Save current buffers."
-  (buffer-guardian-save-buffer-maybe (current-buffer)))
+  (when (bound-and-true-p buffer-guardian-mode)
+    (buffer-guardian-save-buffer-maybe (current-buffer))))
 
 (defun buffer-guardian--on-focus-change ()
   "Run `buffer-guardian-save-all-buffers' when Emacs loses focus."
-  (when (and buffer-guardian-save-on-focus-loss
+  (when (and (bound-and-true-p buffer-guardian-mode)
+             buffer-guardian-save-on-focus-loss
              ;; The frame is unfocused
              (not (when (fboundp 'frame-focus-state)
                     (frame-focus-state))))
@@ -337,7 +331,8 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 
 (defun buffer-guardian--minibuffer-setup-hook ()
   "Save the buffer whenever the minibuffer is open."
-  (when buffer-guardian-save-on-minibuffer
+  (when (and (bound-and-true-p buffer-guardian-mode)
+             buffer-guardian-save-on-minibuffer)
     (let* ((window (minibuffer-selected-window))
            (buffer (when window
                      (window-buffer window))))
@@ -346,7 +341,8 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 
 (defun buffer-guardian--mouse-leave-buffer-hook ()
   "Save the current buffer when the mouse leaves it."
-  (buffer-guardian-save-buffer-maybe (current-buffer)))
+  (when (bound-and-true-p buffer-guardian-mode)
+    (buffer-guardian-save-buffer-maybe (current-buffer))))
 
 (defvar buffer-guardian--previous-buffer nil
   "Internal. Tracks the last seen buffer for auto-saving on window changes.")
@@ -428,8 +424,9 @@ By default, it only saves when the file exists on the disk."
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
 BUFFER-LIST is the list of buffers."
-  (dolist (buffer (or buffer-list (buffer-list)))
-    (buffer-guardian-save-buffer-maybe buffer)))
+  (when (bound-and-true-p buffer-guardian-mode)
+    (dolist (buffer (or buffer-list (buffer-list)))
+      (buffer-guardian-save-buffer-maybe buffer))))
 
 ;;; Mode
 
@@ -443,7 +440,6 @@ BUFFER-LIST is the list of buffers."
                     buffer-guardian-save-on-minibuffer
                     buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-change
-                    buffer-guardian-save-on-mouse-leave
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
                     buffer-guardian-save-all-trigger-hooks
