@@ -43,6 +43,16 @@
   :type 'boolean
   :group 'buffer-guardian)
 
+(defcustom buffer-guardian-save-when-leaving-buffer t
+  "Save the current buffer when `window-buffer-change-functions' runs."
+  :type 'boolean
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-save-when-leaving-window t
+  "Save the current buffer when `window-selection-change-functions' runs."
+  :type 'boolean
+  :group 'buffer-guardian)
+
 (defcustom buffer-guardian-save-all-buffers-interval nil
   "Interval in seconds for automatically saving all buffers.
 This allows you to periodically save all file visiting buffers at once,
@@ -329,11 +339,13 @@ OBJECT can be a frame or a window."
             (add-hook hook #'buffer-guardian-save-all-buffers)))
 
         ;; Window buffer change
-        ;; TODO variable to configure this
-        (add-hook 'window-buffer-change-functions
-                  #'buffer-guardian--window-buffer-change-functions)
-        (add-hook 'window-selection-change-functions
-                  #'buffer-guardian--window-selection-change)
+        (when buffer-guardian-save-when-leaving-buffer
+          (add-hook 'window-buffer-change-functions
+                    #'buffer-guardian--window-buffer-change-functions))
+
+        (when buffer-guardian-save-when-leaving-window
+          (add-hook 'window-selection-change-functions
+                    #'buffer-guardian--window-selection-change))
 
         ;; Minibuffer setup
         ;; ----------------
@@ -380,6 +392,8 @@ OBJECT can be a frame or a window."
     ;; Window buffer change
     (remove-hook 'window-buffer-change-functions
                  #'buffer-guardian--window-buffer-change-functions)
+    (remove-hook 'window-selection-change-functions
+                 #'buffer-guardian--window-selection-change)
 
     ;; Minibuffer setup
     ;; ----------------
