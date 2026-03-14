@@ -1,4 +1,4 @@
-# buffer-guardian.el - Automatically save Emacs buffers without manual intervention
+# buffer-guardian.el - Automatically Save Emacs buffers Without Manual Intervention
 ![Build Status](https://github.com/jamescherti/buffer-guardian.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
