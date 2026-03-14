@@ -32,6 +32,13 @@ To install *buffer-guardian* with `straight.el`:
              :type git
              :host github
              :repo "jamescherti/buffer-guardian.el")
+
+  :custom
+  ;; When non-nil, include remote files in the auto-save process
+  (buffer-guardian-inhibit-saving-remote-files t)
+  ;; When set to nil, buffers visiting nonexistent files can still be saved.
+  (buffer-guardian-inhibit-saving-nonexistent-files t)
+
   :hook
   (after-init . buffer-guardian-mode))
 ```
@@ -44,6 +51,13 @@ To install *buffer-guardian* with `use-package` and `:vc` (Emacs >= 30):
 (use-package buffer-guardian
   :vc (:url "https://github.com/jamescherti/buffer-guardian.el"
        :rev :newest)
+
+  :custom
+  ;; When non-nil, include remote files in the auto-save process
+  (buffer-guardian-inhibit-saving-remote-files t)
+  ;; When set to nil, buffers visiting nonexistent files can still be saved.
+  (buffer-guardian-inhibit-saving-nonexistent-files t)
+
   :hook
   (after-init . buffer-guardian-mode))
 ```
@@ -62,7 +76,11 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 2. Add to `~/.doom.d/config.el`:
 ```elisp
 (after! buffer-guardian
-  ;; TODO: setq options
+  ;; When non-nil, include remote files in the auto-save process
+  (setq buffer-guardian-inhibit-saving-remote-files t)
+  ;; When set to nil, buffers visiting nonexistent files can still be saved.
+  (setq buffer-guardian-inhibit-saving-nonexistent-files t)
+
   (buffer-guardian-mode))
 ```
 
@@ -93,7 +111,6 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
 * `buffer-guardian-exclude` (Default: `nil`): A list of regular expressions for file names to ignore.
 * `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
-* `buffer-guardian-predicates` (Default: `nil`): A list of custom predicate functions. If any returns `nil`, the buffer is not saved.
 
 ### Advanced
 

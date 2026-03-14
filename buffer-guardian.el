@@ -114,6 +114,7 @@
 (defvar buffer-guardian--save-all-buffers-timer nil
   "Internal Timer object for saving all buffers.")
 
+
 (defvar buffer-guardian--save-all-buffers-idle-timer nil
   "Internal timer object for saving all buffers when the user is idle.")
 
@@ -261,13 +262,15 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                    (<= buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
                (seq-every-p (lambda (pred)
-                              (condition-case err
-                                  (funcall pred)
-                                (error
-                                 (display-warning 'buffer-guardian
-                                                  (format "Predicate failed: %S" err)
-                                                  :warning)
-                                 nil)))
+                              (when (functionp pred)
+                                (condition-case err
+                                    (funcall pred)
+                                  (error
+                                   (display-warning
+                                    'buffer-guardian
+                                    (format "Predicate failed: %S" err)
+                                    :warning)
+                                   nil))))
                             buffer-guardian-predicates))
       (cond
        ;; Specialized buffers
