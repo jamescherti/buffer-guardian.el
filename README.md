@@ -6,7 +6,8 @@
 The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
 By default, it saves a buffer when the user:
-- Switches to another buffer or window
+- Switches to another buffer
+- Switches to another window or frame
 - Emacs loses focus
 - The minibuffer is opened
 
