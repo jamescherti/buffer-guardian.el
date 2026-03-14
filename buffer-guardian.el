@@ -256,15 +256,20 @@ specialized symbols for \='org-src and \='edit-indirect buffers.
 Returns: \='org-src, \='edit-indirect, t, or nil."
   (let* ((file-name (buffer-file-name)))
     (when (and (buffer-modified-p)
-               ;; Global Exclusion check first
-               (not (buffer-guardian-exclude-p file-name)))
+               (not (buffer-guardian-exclude-p file-name))
+               (or (not buffer-guardian-max-buffer-size)
+                   (<= buffer-guardian-max-buffer-size 0)
+                   (<= (buffer-size) buffer-guardian-max-buffer-size))
+               (seq-every-p (lambda (pred)
+                              (condition-case err
+                                  (funcall pred)
+                                (error
+                                 (display-warning 'buffer-guardian
+                                                  (format "Predicate failed: %S" err)
+                                                  :warning)
+                                 nil)))
+                            buffer-guardian-predicates))
       (cond
-       ;; Max size check
-       ((and buffer-guardian-max-buffer-size
-             (> buffer-guardian-max-buffer-size 0)
-             (> (buffer-size) buffer-guardian-max-buffer-size))
-        nil)
-
        ;; Specialized buffers
        ((and include-non-file-visiting
              (fboundp 'org-src-edit-buffer-p)
@@ -283,19 +288,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
            (file-writable-p file-name))
          (if buffer-guardian-inhibit-saving-nonexistent-files
              (file-exists-p file-name)
-           t)))
-
-       ;; Custom predicates
-       ((seq-some (lambda (pred)
-                    (condition-case err
-                        (funcall pred)
-                      (error
-                       (display-warning 'buffer-guardian
-                                        (format "Predicate failed: %S" err)
-                                        :warning)
-                       nil)))
-                  buffer-guardian-predicates)
-        t)))))
+           t)))))))
 
 (defun buffer-guardian-save-buffer-maybe (&optional buffer)
   "Save BUFFER if it is visiting a file that is existing on the disk.
