@@ -113,7 +113,7 @@
                         #'buffer-guardian--window-selection-change)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-mouse-leave nil
+(defcustom buffer-guardian-save-on-mouse-leave t
   "Save the current buffer when the mouse pointer leaves it.
 Uses `mouse-leave-buffer-hook'."
   :type 'boolean
