@@ -366,13 +366,15 @@ By default, it only saves when the file exists on the disk."
                    (fboundp 'org-edit-src-save))
               (funcall 'org-edit-src-save)
               (when buffer-guardian-verbose
-                (message "[buffer-guardian] Save: '%s'" (buffer-name))))
+                (message "[buffer-guardian] Org-src Save: '%s'"
+                         (buffer-name))))
 
              ((and (eq predicate-result 'edit-indirect)
                    (fboundp 'edit-indirect--commit))
               (funcall 'edit-indirect--commit)
               (when buffer-guardian-verbose
-                (message "[buffer-guardian] Save: '%s'" (buffer-name))))
+                (message "[buffer-guardian] Edit-indirect Save: '%s'"
+                         (buffer-name))))
 
              (t
               (if (verify-visited-file-modtime (current-buffer))
