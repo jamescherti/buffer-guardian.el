@@ -159,14 +159,14 @@ If set to nil, this feature is disabled."
 (defcustom buffer-guardian-inhibit-saving-remote-files t
   "If non-nil, `buffer-guardian' will not auto-save remote files.
 When set to nil, remote files will be included in the auto-save process. This
-setting is used by `buffer-guardian-predicate'."
+setting is used by `buffer-guardian--predicate'."
   :type 'boolean
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-inhibit-saving-nonexistent-files t
   "If non-nil, `buffer-guardian' will not save files that do not exist on disk.
 When set to nil, buffers visiting nonexistent files can still be saved.
-This setting is used by `buffer-guardian-predicate'."
+This setting is used by `buffer-guardian--predicate'."
   :type 'boolean
   :group 'buffer-guardian)
 
@@ -259,14 +259,14 @@ buffers ensures modifications are committed back to the original parent buffer."
 
 ;;; Internal functions
 
-(defun buffer-guardian-exclude-regexps-p (filename)
+(defun buffer-guardian--exclude-regexps-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
   (and filename
        (seq-some (lambda (regexp)
                    (string-match-p regexp filename))
                  buffer-guardian-exclude-regexps)))
 
-(defun buffer-guardian-predicate (&optional include-non-file-visiting)
+(defun buffer-guardian--predicate (&optional include-non-file-visiting)
   "Determine if the current buffer should be automatically saved.
 
 If INCLUDE-NON-FILE-VISITING is non-nil, the predicate recognizes and returns
@@ -275,7 +275,7 @@ specialized symbols for \='org-src and \='edit-indirect buffers.
 Returns: \='org-src, \='edit-indirect, t, or nil."
   (let ((file-name (buffer-file-name)))
     (when (and (buffer-modified-p)
-               (not (buffer-guardian-exclude-regexps-p file-name))
+               (not (buffer-guardian--exclude-regexps-p file-name))
                (or (not buffer-guardian-max-buffer-size)
                    (< buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
@@ -378,7 +378,7 @@ By default, it only saves when the file exists on the disk."
   (let ((target-buffer (or buffer (current-buffer))))
     (when (buffer-live-p target-buffer)
       (with-current-buffer target-buffer
-        (let ((predicate-result (buffer-guardian-predicate t)))
+        (let ((predicate-result (buffer-guardian--predicate t)))
           (when predicate-result
             (cond
              ((and (eq predicate-result 'org-src)
