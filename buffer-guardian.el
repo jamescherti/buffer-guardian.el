@@ -352,6 +352,7 @@ OBJECT can be a frame or a window."
 
 ;;; Functions
 
+;;;###autoload
 (defun buffer-guardian-save-buffer-maybe (&optional buffer)
   "Save BUFFER if it is visiting a file that is existing on the disk.
 By default, it only saves when the file exists on the disk."
@@ -387,6 +388,7 @@ By default, it only saves when the file exists on the disk."
                                    "was modified externally.")
                            (buffer-file-name (buffer-base-buffer)))))))))))))
 
+;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save some modified buffers that are visiting files that exist on the disk.
 BUFFER-LIST is the list of buffers."
