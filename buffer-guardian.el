@@ -28,6 +28,11 @@
 
 (require 'seq)
 
+(defgroup buffer-guardian nil
+  "Customization options for `buffer-guardian-mode'."
+  :group 'buffer-guardian
+  :prefix "buffer-guardian-")
+
 (defcustom buffer-guardian-verbose nil
   "Enable verbose mode to log when a buffer is automatically saved."
   :type 'boolean
