@@ -409,7 +409,7 @@ OBJECT can be a frame or a window."
 (define-minor-mode buffer-guardian-mode
   "Toggle `buffer-guardian-mode'."
   :global t
-  :lighter " SaveAngel"
+  :lighter " BGuardian"
   :group 'buffer-guardian
   (let ((settings '(buffer-guardian-save-on-focus-loss
                     buffer-guardian-save-on-minibuffer
