@@ -59,6 +59,16 @@
   :type 'boolean
   :group 'buffer-guardian)
 
+(defcustom buffer-guardian-support-org-src t
+  "Enable automatic saving for `org-src' buffers."
+  :type 'boolean
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-support-edit-indirect t
+  "Enable automatic saving for `edit-indirect' buffers."
+  :type 'boolean
+  :group 'buffer-guardian)
+
 (defcustom buffer-guardian-save-on-focus-loss t
   "Save the current buffer when Emacs loses focus."
   :type 'boolean
@@ -274,11 +284,13 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
       (cond
        ;; Specialized buffers
        ((and include-non-file-visiting
+             buffer-guardian-support-org-src
              (fboundp 'org-src-edit-buffer-p)
              (funcall 'org-src-edit-buffer-p))
         'org-src)
 
        ((and include-non-file-visiting
+             buffer-guardian-support-edit-indirect
              (bound-and-true-p edit-indirect--overlay))
         'edit-indirect)
 
