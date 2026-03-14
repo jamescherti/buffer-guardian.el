@@ -14,10 +14,23 @@ The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode t
 
 In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
 
-Other features that are disabled by default:
-- Saves all buffers on a periodic interval or when Emacs is idle. (via `buffer-guardian-save-all-buffers-interval` and `buffer-guardian-save-all-buffers-idle`.)
-- Excludes remote files, nonexistent files, or huge files.
-- Allows custom exclusion rules using regular expressions or predicate functions.
+## Features
+
+Features enabled by default:
+* Save the current buffer when switching to another buffer. (Variable: `buffer-guardian-save-on-buffer-switch`)
+* Save the current buffer when switching to another window or frame. (Variable: `buffer-guardian-save-on-window-change`)
+* Save the current buffer when the mouse pointer leaves its window. (Variable: `buffer-guardian-save-on-mouse-leave`)
+* Save the current buffer when the minibuffer is opened. (Variable: `buffer-guardian-save-on-minibuffer`)
+* Save all modified buffers when Emacs loses focus. (Variable: `buffer-guardian-save-on-focus-loss`)
+
+Features disabled by default:
+* Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
+* Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
+* Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
+* Prevent saving files that do not exist on disk. (Variable: `buffer-guardian-inhibit-saving-nonexistent-files`)
+* Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
+* Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
+* Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
 
 ## Installation
 
@@ -100,6 +113,7 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
 * `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
+* `buffer-guardian-save-on-mouse-leave` (Default: `t`): Save the current buffer when the mouse pointer leaves its window.
 
 ### Timers
 
@@ -112,6 +126,7 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
 * `buffer-guardian-exclude-regexps` (Default: `nil`): A list of regular expressions for file names to ignore.
 * `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
+* `buffer-guardian-predicate-functions` (Default: `nil`): List of predicate functions to determine if a buffer should be saved.
 
 ### Specialized Buffers (Inline Code Blocks)
 
