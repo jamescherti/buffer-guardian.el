@@ -262,8 +262,8 @@ buffers ensures modifications are committed back to the original parent buffer."
 (defun buffer-guardian--exclude-regexps-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
   (and filename
-       (seq-some (lambda (regexp)
-                   (string-match-p regexp filename))
+       (seq-some #'(lambda (regexp)
+                     (string-match-p regexp filename))
                  buffer-guardian-exclude-regexps)))
 
 (defun buffer-guardian--predicate (&optional include-non-file-visiting)
@@ -279,16 +279,16 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                (or (not buffer-guardian-max-buffer-size)
                    (< buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
-               (seq-every-p (lambda (pred)
-                              (when (functionp pred)
-                                (condition-case err
-                                    (funcall pred)
-                                  (error
-                                   (display-warning
-                                    'buffer-guardian
-                                    (format "Predicate failed: %S" err)
-                                    :warning)
-                                   nil))))
+               (seq-every-p #'(lambda (pred)
+                                (when (functionp pred)
+                                  (condition-case err
+                                      (funcall pred)
+                                    (error
+                                     (display-warning
+                                      'buffer-guardian
+                                      (format "Predicate failed: %S" err)
+                                      :warning)
+                                     nil))))
                             buffer-guardian-predicate-functions))
       (cond
        ;; Specialized buffers
