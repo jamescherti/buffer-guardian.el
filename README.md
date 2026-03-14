@@ -14,7 +14,7 @@ By default, it saves a buffer when the user:
 In addition to regular file buffers, `buffer-guardian` also handles specialized editing buffers such as `org-src` and `edit-indirect`. *(These buffers are temporary editing environments that are linked to another underlying buffer Saving them is important because the changes made in these indirect editing contexts must be propagated back to the original buffer to ensure that the modifications are not lost.)*
 
 Other feature that are disabled by default:
-- Saves all buffers on a periodic interval or when Emacs is idle.
+- Saves all buffers on a periodic interval or when Emacs is idle. (via `buffer-guardian-save-all-buffers-interval` and `buffer-guardian-save-all-buffers-idle`.)
 - Excludes remote files, nonexistent files, or huge files.
 - Allows custom exclusion rules using regular expressions or predicate functions.
 
