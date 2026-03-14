@@ -320,7 +320,6 @@ BUFFER-LIST is the list of buffers."
   (dolist (buffer (or buffer-list (buffer-list)))
     (buffer-guardian-save-buffer-maybe buffer)))
 
-;; TODO: add optional option to auto revert the buffer or never revert
 (defun buffer-guardian-save-buffer ()
   "Save the current buffer.
 
@@ -391,16 +390,13 @@ OBJECT can be a frame or a window."
     (when (and frame window)
       (with-selected-frame frame
         (with-selected-window window
-          (when-let* ((buffer (window-buffer)))
-            (when (and
-                   (buffer-live-p buffer)
-                   (or (not buffer-guardian--previous-buffer)
-                       (not (eq buffer buffer-guardian--previous-buffer))))
+          (let ((buffer (window-buffer)))
+            (when (and buffer
+                       (buffer-live-p buffer)
+                       (or (not buffer-guardian--previous-buffer)
+                           (not (eq buffer buffer-guardian--previous-buffer))))
               ;; Save previous buffers
               (when buffer-guardian--previous-buffer
-                ;; (message "[BUFFER-WINDOW DEBUG] SAVE: %S"
-                ;;          buffer-guardian--previous-buffer)
-
                 (when (buffer-live-p buffer-guardian--previous-buffer)
                   (buffer-guardian-save-buffer-maybe
                    buffer-guardian--previous-buffer))
@@ -442,8 +438,6 @@ OBJECT can be a frame or a window."
     (dolist (setting settings)
       (funcall (or (get setting 'custom-set) #'set-default)
                setting (symbol-value setting)))))
-
-;;; Provide
 
 (provide 'buffer-guardian)
 
