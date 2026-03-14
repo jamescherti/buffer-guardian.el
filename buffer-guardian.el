@@ -290,8 +290,7 @@ By default, it only saves when the file exists on the disk."
     (setq buffer (current-buffer)))
   (when (buffer-live-p buffer)
     (with-current-buffer buffer
-      (let ((predicate-result (buffer-guardian-predicate
-                               :include-all-buffers)))
+      (let ((predicate-result (buffer-guardian-predicate :include-all-buffers)))
         (when predicate-result
           (cond
            ((and (eq predicate-result 'org-src)
@@ -320,34 +319,6 @@ By default, it only saves when the file exists on the disk."
 BUFFER-LIST is the list of buffers."
   (dolist (buffer (or buffer-list (buffer-list)))
     (buffer-guardian-save-buffer-maybe buffer)))
-
-(defun buffer-guardian-save-buffer ()
-  "Save the current buffer.
-
-If the buffer is visiting a file and has a base buffer, save that base buffer.
-
-Before saving, check if the visited file has been modified outside of Emacs. If
-so, prompt the user for confirmation and revert the buffer if confirmed. Then
-save the buffer without prompting or displaying messages."
-  (interactive)
-  (let ((buffer (or (buffer-base-buffer) (current-buffer)))
-        (file-name (buffer-file-name (buffer-base-buffer)))
-        (buffer-guardian-inhibit-saving-nonexistent-files nil))
-    (when buffer
-      (cond
-       (file-name
-        (with-current-buffer buffer
-          ;; Was the file modified outside of Emacs? Revert buffer
-          (unless (verify-visited-file-modtime (current-buffer))
-            (when (yes-or-no-p (format "Discard edits and reread from '%s'?"
-                                       file-name))
-              (revert-buffer :ignore-auto :noconfirm)))
-
-          ;; Save buffer
-          (buffer-guardian-save-buffer-maybe)))
-
-       (t
-        (buffer-guardian-save-buffer-maybe))))))
 
 (defun buffer-guardian--before-advice-save-current-buffer (&rest _)
   "Save current buffers."
