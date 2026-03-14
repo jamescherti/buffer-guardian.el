@@ -31,14 +31,17 @@
 ;; - The minibuffer is opened
 ;;
 ;; In addition to regular file buffers, `buffer-guardian' also handles
-;; specialized editing buffers such as `org-src' and `edit-indirect'. These
+;; specialized editing buffers such as `org-src' and `edit-indirect'. (These
 ;; buffers are temporary editing environments that are linked to another
-;; underlying buffer.
+;; underlying buffer Saving them is important because the changes made in these
+;; indirect editing contexts must be propagated back to the original buffer to
+;; ensure that the modifications are not lost.)
 ;;
 ;; Other feature that are disabled by default:
-;; - Excludes remote files, nonexistent files, and very large files by default
-;; - Supports custom exclusion rules using regular expressions or predicate
-;;   functions
+;; - Saves all buffers on a periodic interval or when Emacs is idle.
+;; - Excludes remote files, nonexistent files, or huge files.
+;; - Allows custom exclusion rules using regular expressions or predicate
+;;   functions.
 
 ;;; Code:
 
