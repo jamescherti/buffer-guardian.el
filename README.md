@@ -1,9 +1,19 @@
-# buffer-guardian.el
+# buffer-guardian.el - Save your work without thinking about it
 ![Build Status](https://github.com/jamescherti/buffer-guardian.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-Save your work without thinking about it.
+The `buffer-guardian` package provides a global mode that automatically saves your buffers based on events, timers, and focus changes, ensuring you never lose your progress.
+
+## Features
+
+* Saves the current buffer when Emacs loses focus.
+* Saves when opening the minibuffer.
+* Saves upon window selection or buffer changes.
+* Saves all buffers on a periodic interval or when Emacs is idle.
+* Excludes remote files, nonexistent files, or huge files by default.
+* Allows custom exclusion rules using regular expressions or predicate functions.
+* Supports specialized buffers like `org-src` and `edit-indirect`.
 
 ## Installation
 
@@ -54,6 +64,41 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 ```
 doom sync
 ```
+
+## Configuration
+
+You can customize `buffer-guardian` to fit your workflow. Below are the main customization variables:
+
+### Triggers
+
+* `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when Emacs loses focus.
+* `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
+* `buffer-guardian-save-on-buffer-change` (Default: `t`): Save when `window-buffer-change-functions` runs.
+* `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
+
+### Timers
+
+* `buffer-guardian-save-all-buffers-interval` (Default: `nil`): Save all buffers periodically every N seconds.
+* `buffer-guardian-save-all-buffers-idle` (Default: `nil`): Save all buffers after N seconds of user idle time.
+
+### Exclusions and Filters
+
+* `buffer-guardian-inhibit-saving-remote-files` (Default: `t`): Prevent auto-saving remote files.
+* `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
+* `buffer-guardian-exclude` (Default: `nil`): A list of regular expressions for file names to ignore.
+* `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
+* `buffer-guardian-predicates` (Default: `nil`): A list of custom predicate functions. If any returns `nil`, the buffer is not saved.
+
+### Advanced
+
+* `buffer-guardian-hooks-auto-save-all-buffers`: A list of hooks that trigger saving all modified buffers. Defaults to `'(mouse-leave-buffer-hook)`.
+* `buffer-guardian-functions-auto-save-current-buffer`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
+* `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
+
+## Commands
+
+* `buffer-guardian-save-buffer`: Interactively save the current buffer. It checks if the file was modified outside of Emacs and prompts to revert if necessary.
+* `buffer-guardian-save-all-buffers`: Interactively save all modified buffers that visit existing files.
 
 ## Author and License
 
