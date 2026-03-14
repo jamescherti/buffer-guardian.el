@@ -3,17 +3,19 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The `buffer-guardian` package provides a global mode that automatically saves your buffers based on events, timers, and focus changes, ensuring you never lose your progress.
+The `buffer-guardian` package provides a global mode that automatically saves buffers without requiring manual intervention.
 
-## Features
+By default, it saves a buffer when the user:
+- Switches to another buffer or window
+- Emacs loses focus
+- The minibuffer is opened
 
-* Saves the current buffer when Emacs loses focus.
-* Saves when opening the minibuffer.
-* Saves upon window selection or buffer changes.
-* Saves all buffers on a periodic interval or when Emacs is idle.
-* Excludes remote files, nonexistent files, or huge files by default.
-* Allows custom exclusion rules using regular expressions or predicate functions.
-* Supports specialized buffers like `org-src` and `edit-indirect`.
+In addition to regular file buffers, `buffer-guardian` also handles specialized editing buffers such as `org-src` and `edit-indirect`. These buffers are temporary editing environments that are linked to another underlying buffer.
+
+Other feature that are disabled by default:
+- Excludes remote files, nonexistent files, and very large files by default
+- Supports custom exclusion rules using regular expressions or predicate
+  functions
 
 ## Installation
 
