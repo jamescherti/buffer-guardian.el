@@ -283,55 +283,56 @@ save the buffer without prompting or displaying messages."
 (defun buffer-guardian--on-buffer-change (&optional object)
   "Function called by `window-buffer-change-functions'.
 OBJECT can be a frame or a window."
-  (when (bound-and-true-p persist-text-scale-mode)
-    (let* ((is-frame (frame-live-p object))
-           (frame (if is-frame
-                      object
-                    (selected-frame)))
-           (window (cond
-                    ;; Frame
-                    (is-frame
-                     (with-selected-frame object
-                       (selected-window)))
-                    ;; Window
-                    ((window-live-p object)
-                     object)
-                    ;; Current window
-                    (t
-                     (selected-window)))))
-      (when (and frame window)
-        (with-selected-frame frame
-          (with-selected-window window
-            (when-let* ((buffer (window-buffer)))
-              (when (and
-                     (buffer-live-p buffer)
-                     (or (not buffer-guardian--previous-buffer)
-                         (not (eq buffer buffer-guardian--previous-buffer))))
-                ;; Save previous buffers
-                (when buffer-guardian--previous-buffer
-                  ;; (message "[BUFFER-WINDOW DEBUG] SAVE: %S"
-                  ;;          buffer-guardian--previous-buffer)
+  (let* ((is-frame (frame-live-p object))
+         (frame (if is-frame
+                    object
+                  (selected-frame)))
+         (window (cond
+                  ;; Frame
+                  (is-frame
+                   (with-selected-frame object
+                     (selected-window)))
+                  ;; Window
+                  ((window-live-p object)
+                   object)
+                  ;; Current window
+                  (t
+                   (selected-window)))))
+    (when (and frame window)
+      (with-selected-frame frame
+        (with-selected-window window
+          (when-let* ((buffer (window-buffer)))
+            (when (and
+                   (buffer-live-p buffer)
+                   (or (not buffer-guardian--previous-buffer)
+                       (not (eq buffer buffer-guardian--previous-buffer))))
+              ;; Save previous buffers
+              (when buffer-guardian--previous-buffer
+                ;; (message "[BUFFER-WINDOW DEBUG] SAVE: %S"
+                ;;          buffer-guardian--previous-buffer)
 
-                  (when (buffer-live-p buffer-guardian--previous-buffer)
-                    (buffer-guardian-save-buffer-maybe
-                     buffer-guardian--previous-buffer))
+                (when (buffer-live-p buffer-guardian--previous-buffer)
+                  (buffer-guardian-save-buffer-maybe
+                   buffer-guardian--previous-buffer))
 
-                  ;; Reset
-                  (setq buffer-guardian--previous-buffer nil))
+                ;; Reset
+                (setq buffer-guardian--previous-buffer nil))
 
-                ;; Push the current buffer
-                (setq buffer-guardian--previous-buffer buffer)))))))))
+              ;; Push the current buffer
+              (setq buffer-guardian--previous-buffer buffer))))))))
 
 (defvar buffer-guardian--previous-window nil)
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
-  (when buffer-guardian-save-on-buffer-change
+  (when (and buffer-guardian-save-on-buffer-change
+             (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
 (defun buffer-guardian--window-selection-change (object)
   "Run on window change in OBJECT (frame or window)."
-  (when buffer-guardian-save-on-window-change
+  (when (and buffer-guardian-save-on-window-change
+             (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
 ;;;###autoload
