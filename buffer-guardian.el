@@ -62,11 +62,16 @@
   :type 'boolean
   :set (lambda (symbol value)
          (set-default symbol value)
-         (if (and value (bound-and-true-p buffer-guardian-mode))
-             (add-function :after after-focus-change-function
-                           #'buffer-guardian--on-focus-change)
-           (remove-function after-focus-change-function
-                            #'buffer-guardian--on-focus-change)))
+         (if (boundp 'after-focus-change-function)
+             (if (and value (bound-and-true-p buffer-guardian-mode))
+                 (add-function :after after-focus-change-function
+                               #'buffer-guardian--on-focus-change)
+               (remove-function after-focus-change-function
+                                #'buffer-guardian--on-focus-change))
+           (with-no-warnings
+             (if (and value (bound-and-true-p buffer-guardian-mode))
+                 (add-hook 'focus-out-hook #'buffer-guardian--on-focus-change)
+               (remove-hook 'focus-out-hook #'buffer-guardian--on-focus-change)))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-on-minibuffer t
