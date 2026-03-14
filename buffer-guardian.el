@@ -171,7 +171,6 @@ whether this buffer needs to be saved or not, then it must return t."
 (defcustom buffer-guardian-hooks-auto-save-all-buffers
   '(mouse-leave-buffer-hook)
   "List of hook symbols that trigger saving of all modified buffers.
-
 When any of these hooks run, all buffers are saved. For example, to ensure that
 work is not lost when Emacs loses focus or the mouse leaves the current buffer."
   :group 'buffer-guardian
