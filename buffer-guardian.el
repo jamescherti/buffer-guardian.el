@@ -30,7 +30,7 @@
 ;; - Emacs loses focus
 ;; - The minibuffer is opened
 ;;
-;; In addition to regular file buffers, `buffer-guardian' also handles
+;; In addition to regular file-visiting buffers, `buffer-guardian' also handles
 ;; specialized editing buffers such as `org-src' and `edit-indirect'. (These
 ;; buffers are temporary editing environments that are linked to another
 ;; underlying buffer Saving them is important because the changes made in these
@@ -376,6 +376,7 @@ By default, it only saves when the file exists on the disk."
                 (message "[buffer-guardian] Edit-indirect Save: '%s'"
                          (buffer-name))))
 
+             ;; File-visiting buffers
              (t
               (if (verify-visited-file-modtime (current-buffer))
                   (progn
