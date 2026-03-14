@@ -97,11 +97,6 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-functions-auto-save-current-buffer`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
-## Commands
-
-* `buffer-guardian-save-buffer`: Interactively save the current buffer. It checks if the file was modified outside of Emacs and prompts to revert if necessary.
-* `buffer-guardian-save-all-buffers`: Interactively save all modified buffers that visit existing files.
-
 ## Author and License
 
 The *buffer-guardian* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version.

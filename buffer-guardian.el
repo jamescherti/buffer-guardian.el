@@ -68,6 +68,7 @@
                                #'buffer-guardian--on-focus-change)
                (remove-function after-focus-change-function
                                 #'buffer-guardian--on-focus-change))
+           ;; Emacs <= 26
            (with-no-warnings
              (if (and value (bound-and-true-p buffer-guardian-mode))
                  (add-hook 'focus-out-hook #'buffer-guardian--on-focus-change)
@@ -391,8 +392,6 @@ OBJECT can be a frame or a window."
 
               ;; Push the current buffer
               (setq buffer-guardian--previous-buffer buffer))))))))
-
-(defvar buffer-guardian--previous-window nil)
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
