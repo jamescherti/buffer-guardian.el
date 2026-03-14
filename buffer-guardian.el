@@ -25,7 +25,7 @@
 ;; The `buffer-guardian' package provides a global mode that automatically saves
 ;; buffers without requiring manual intervention.
 ;;
-;; By default, it saves a buffer when the user:
+;; By default, `buffer-guardian-mode' saves a buffer when the user:
 ;; - Switches to another buffer or window
 ;; - Emacs loses focus
 ;; - The minibuffer is opened
@@ -37,7 +37,7 @@
 ;; indirect editing contexts must be propagated back to the original buffer to
 ;; ensure that the modifications are not lost.)
 ;;
-;; Other feature that are disabled by default:
+;; Other features that are disabled by default:
 ;; - Saves all buffers on a periodic interval or when Emacs is idle.
 ;; - Excludes remote files, nonexistent files, or huge files.
 ;; - Allows custom exclusion rules using regular expressions or predicate
@@ -111,6 +111,19 @@
                        #'buffer-guardian--window-selection-change)
            (remove-hook 'window-selection-change-functions
                         #'buffer-guardian--window-selection-change)))
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-save-on-mouse-leave nil
+  "Save the current buffer when the mouse pointer leaves it.
+Uses `mouse-leave-buffer-hook'."
+  :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (if (and value (bound-and-true-p buffer-guardian-mode))
+             (add-hook 'mouse-leave-buffer-hook
+                       #'buffer-guardian--mouse-leave-buffer-hook)
+           (remove-hook 'mouse-leave-buffer-hook
+                        #'buffer-guardian--mouse-leave-buffer-hook)))
   :group 'buffer-guardian)
 
 (defvar buffer-guardian--save-all-buffers-timer nil
@@ -190,12 +203,9 @@ whether this buffer needs to be saved or not, then it must return t."
   :group 'buffer-guardian
   :type '(repeat function))
 
-(defcustom buffer-guardian-save-all-trigger-hooks
-  '(mouse-leave-buffer-hook)
+(defcustom buffer-guardian-save-all-trigger-hooks nil
   "List of hook symbols that trigger saving of all modified buffers.
-
-When any of these hooks run, all buffers are saved. For example, to ensure that
-work is not lost when Emacs loses focus or the mouse leaves the current buffer."
+When any of these hooks run, all buffers are saved."
   :group 'buffer-guardian
   :type '(repeat hook)
   :set (lambda (symbol value)
@@ -260,10 +270,10 @@ buffers ensures modifications are committed back to the original parent buffer."
 ;;; Internal functions
 
 (defun buffer-guardian--exclude-regexps-p (filename)
-  "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
+  "Return non-nil if FILENAME matches any of `buffer-guardian-exclude-regexps'."
   (and filename
-       (seq-some #'(lambda (regexp)
-                     (string-match-p regexp filename))
+       (seq-some (lambda (regexp)
+                   (string-match-p regexp filename))
                  buffer-guardian-exclude-regexps)))
 
 (defun buffer-guardian--predicate (&optional include-non-file-visiting)
@@ -279,16 +289,16 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                (or (not buffer-guardian-max-buffer-size)
                    (< buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
-               (seq-every-p #'(lambda (pred)
-                                (when (functionp pred)
-                                  (condition-case err
-                                      (funcall pred)
-                                    (error
-                                     (display-warning
-                                      'buffer-guardian
-                                      (format "Predicate failed: %S" err)
-                                      :warning)
-                                     nil))))
+               (seq-every-p (lambda (pred)
+                              (when (functionp pred)
+                                (condition-case err
+                                    (funcall pred)
+                                  (error
+                                   (display-warning
+                                    'buffer-guardian
+                                    (format "Predicate failed: %S" err)
+                                    :warning)
+                                   nil))))
                             buffer-guardian-predicate-functions))
       (cond
        ;; Specialized buffers
@@ -333,6 +343,10 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                      (window-buffer window))))
       (when (buffer-live-p buffer)
         (buffer-guardian-save-buffer-maybe buffer)))))
+
+(defun buffer-guardian--mouse-leave-buffer-hook ()
+  "Save the current buffer when the mouse leaves it."
+  (buffer-guardian-save-buffer-maybe (current-buffer)))
 
 (defvar buffer-guardian--previous-buffer nil
   "Internal. Tracks the last seen buffer for auto-saving on window changes.")
@@ -429,6 +443,7 @@ BUFFER-LIST is the list of buffers."
                     buffer-guardian-save-on-minibuffer
                     buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-change
+                    buffer-guardian-save-on-mouse-leave
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
                     buffer-guardian-save-all-trigger-hooks
