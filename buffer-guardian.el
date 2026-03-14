@@ -59,16 +59,6 @@
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-support-org-src t
-  "Enable automatic saving for `org-src' buffers."
-  :type 'boolean
-  :group 'buffer-guardian)
-
-(defcustom buffer-guardian-support-edit-indirect t
-  "Enable automatic saving for `edit-indirect' buffers."
-  :type 'boolean
-  :group 'buffer-guardian)
-
 (defcustom buffer-guardian-save-on-focus-loss t
   "Save the current buffer when Emacs loses focus."
   :type 'boolean
@@ -250,6 +240,25 @@ Set this variable to nil to disable advising altogether."
                 func :before
                 #'buffer-guardian--before-advice-save-current-buffer))))))
 
+(defcustom buffer-guardian-handle-org-src t
+  "Enable automatic saving for `org-src' buffers.
+When non-nil, `buffer-guardian' will automatically save the temporary buffers
+used to edit Org mode source code blocks. This ensures that changes made in the
+specialized code editor are propagated back to the parent Org file."
+  :type 'boolean
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-handle-edit-indirect t
+  "Enable automatic saving for `edit-indirect' buffers.
+When non-nil, `buffer-guardian' will automatically save buffers managed by the
+`edit-indirect' package. These are commonly used to edit source code blocks in
+Markdown files (`markdown-mode') or other multi-layered documents. Saving these
+buffers ensures modifications are committed back to the original parent buffer."
+  :type 'boolean
+  :group 'buffer-guardian)
+
+;;; Internal functions
+
 (defun buffer-guardian-exclude-regexps-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude-regexps'."
   (and filename
@@ -284,13 +293,13 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
       (cond
        ;; Specialized buffers
        ((and include-non-file-visiting
-             buffer-guardian-support-org-src
+             buffer-guardian-handle-org-src
              (fboundp 'org-src-edit-buffer-p)
              (funcall 'org-src-edit-buffer-p))
         'org-src)
 
        ((and include-non-file-visiting
-             buffer-guardian-support-edit-indirect
+             buffer-guardian-handle-edit-indirect
              (bound-and-true-p edit-indirect--overlay))
         'edit-indirect)
 
@@ -327,8 +336,6 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 
 (defvar buffer-guardian--previous-buffer nil
   "Internal. Tracks the last seen buffer for auto-saving on window changes.")
-
-;;; Internal functions
 
 (defun buffer-guardian--on-buffer-change (&optional object)
   "Function called by `window-buffer-change-functions'.

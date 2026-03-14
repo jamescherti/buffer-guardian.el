@@ -112,6 +112,11 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-exclude-regexps` (Default: `nil`): A list of regular expressions for file names to ignore.
 * `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
 
+### Specialized Buffers (Inline Code Blocks)
+
+* `buffer-guardian-handle-org-src` (Default: `t`): Enable automatic saving for `org-src` buffers.
+* `buffer-guardian-handle-edit-indirect` (Default: `t`): Enable automatic saving for `edit-indirect` buffers.
+
 ### Advanced
 
 * `buffer-guardian-save-all-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to `'(mouse-leave-buffer-hook)`.
