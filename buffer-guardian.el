@@ -228,9 +228,10 @@ Set this variable to nil to disable advising altogether."
 
 (defun buffer-guardian-exclude-p (filename)
   "Return non-nil if FILENAME matches any of the `buffer-guardian-exclude'."
-  (seq-some (lambda (regexp)
-              (string-match-p regexp filename))
-            buffer-guardian-exclude))
+  (and filename
+       (seq-some (lambda (regexp)
+                   (string-match-p regexp filename))
+                 buffer-guardian-exclude)))
 
 (defun buffer-guardian-predicate (&optional include-non-file-visiting)
   "Determine if the current buffer should be automatically saved.
