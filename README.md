@@ -15,6 +15,8 @@ The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode t
 
 In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
 
+If this package enhances your workflow, please show your support by **⭐ starring buffer-guardian on GitHub** to help more users discover its benefits.
+
 Other features that are **disabled** by default:
 - Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-same-buffer-on-window-change`)
 - Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
@@ -24,6 +26,8 @@ Other features that are **disabled** by default:
 - Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
 - Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
 - Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
+
+(Buffer Guardian is designed to run silently in the background without interrupting your workflow. To achieve this, it enforces strict non-interactive operations and proactively skips saving in scenarios that would normally trigger an interactive prompt. For example, the package will safely abort the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. Additionally, it temporarily disables interactive prompts during the save execution, gracefully catching and logging errors if a third-party hook attempts to ask for user input, thereby ensuring that your editor never freezes during an automatic background save.)
 
 ## Installation
 
@@ -144,3 +148,23 @@ This program is free software: you can redistribute it and/or modify it under th
 ## Links
 
 - [buffer-guardian.el @GitHub](https://github.com/jamescherti/buffer-guardian.el)
+
+Other Emacs packages by the same author:
+- [minimal-emacs.d](https://github.com/jamescherti/minimal-emacs.d): This repository hosts a minimal Emacs configuration designed to serve as a foundation for your vanilla Emacs setup and provide a solid base for an enhanced Emacs experience.
+- [compile-angel.el](https://github.com/jamescherti/compile-angel.el): **Speed up Emacs!** This package guarantees that all .el files are both byte-compiled and native-compiled, which significantly speeds up Emacs.
+- [outline-indent.el](https://github.com/jamescherti/outline-indent.el): An Emacs package that provides a minor mode that enables code folding and outlining based on indentation levels for various indentation-based text files, such as YAML, Python, and other indented text files.
+- [easysession.el](https://github.com/jamescherti/easysession.el): Easysession is lightweight Emacs session manager that can persist and restore file editing buffers, indirect buffers/clones, Dired buffers, the tab-bar, and the Emacs frames (with or without the Emacs frames size, width, and height).
+- [vim-tab-bar.el](https://github.com/jamescherti/vim-tab-bar.el): Make the Emacs tab-bar Look Like Vim’s Tab Bar.
+- [elispcomp](https://github.com/jamescherti/elispcomp): A command line tool that allows compiling Elisp code directly from the terminal or from a shell script. It facilitates the generation of optimized .elc (byte-compiled) and .eln (native-compiled) files.
+- [tomorrow-night-deepblue-theme.el](https://github.com/jamescherti/tomorrow-night-deepblue-theme.el): The Tomorrow Night Deepblue Emacs theme is a beautiful deep blue variant of the Tomorrow Night theme, which is renowned for its elegant color palette that is pleasing to the eyes. It features a deep blue background color that creates a calming atmosphere. The theme is also a great choice for those who miss the blue themes that were trendy a few years ago.
+- [Ultyas](https://github.com/jamescherti/ultyas/): A command-line tool designed to simplify the process of converting code snippets from UltiSnips to YASnippet format.
+- [dir-config.el](https://github.com/jamescherti/dir-config.el): Automatically find and evaluate .dir-config.el Elisp files to configure directory-specific settings.
+- [flymake-bashate.el](https://github.com/jamescherti/flymake-bashate.el): A package that provides a Flymake backend for the bashate Bash script style checker.
+- [flymake-ansible-lint.el](https://github.com/jamescherti/flymake-ansible-lint.el): An Emacs package that offers a Flymake backend for ansible-lint.
+- [inhibit-mouse.el](https://github.com/jamescherti/inhibit-mouse.el): A package that disables mouse input in Emacs, offering a simpler and faster alternative to the disable-mouse package.
+- [quick-sdcv.el](https://github.com/jamescherti/quick-sdcv.el): This package enables Emacs to function as an offline dictionary by using the sdcv command-line tool directly within Emacs.
+- [enhanced-evil-paredit.el](https://github.com/jamescherti/enhanced-evil-paredit.el): An Emacs package that prevents parenthesis imbalance when using *evil-mode* with *paredit*. It intercepts *evil-mode* commands such as delete, change, and paste, blocking their execution if they would break the parenthetical structure.
+- [stripspace.el](https://github.com/jamescherti/stripspace.el): Ensure Emacs Automatically removes trailing whitespace before saving a buffer, with an option to preserve the cursor column.
+- [persist-text-scale.el](https://github.com/jamescherti/persist-text-scale.el): Ensure that all adjustments made with text-scale-increase and text-scale-decrease are persisted and restored across sessions.
+- [pathaction.el](https://github.com/jamescherti/pathaction.el): Execute the pathaction command-line tool from Emacs. The pathaction command-line tool enables the execution of specific commands on targeted files or directories. Its key advantage lies in its flexibility, allowing users to handle various types of files simply by passing the file or directory as an argument to the pathaction tool. The tool uses a .pathaction.yaml rule-set file to determine which command to execute. Additionally, Jinja2 templating can be employed in the rule-set file to further customize the commands.
+- [kirigami.el](https://github.com/jamescherti/kirigami.el): The *kirigami* Emacs package offers a unified interface for opening and closing folds across a diverse set of major and minor modes in Emacs, including `outline-mode`, `outline-minor-mode`, `outline-indent-minor-mode`, `org-mode`, `markdown-mode`, `vdiff-mode`, `vdiff-3way-mode`, `hs-minor-mode`, `hide-ifdef-mode`, `origami-mode`, `yafolding-mode`, `folding-mode`, and `treesit-fold-mode`. With Kirigami, folding key bindings only need to be configured **once**. After that, the same keys work consistently across all supported major and minor modes, providing a unified and predictable folding experience.
