@@ -454,8 +454,16 @@ By default, it only saves when the file exists on the disk."
              ;; File-visiting buffers
              (t
               (let* ((file-name (buffer-file-name (buffer-base-buffer)))
-                     (file-dir (file-name-directory file-name)))
+                     (file-dir (when file-name
+                                 (file-name-directory file-name))))
                 (cond
+                 ((not file-name)
+                  (when buffer-guardian-verbose
+                    (message
+                     (concat "[buffer-guardian] Automatic save skipped "
+                             "for '%s' because it is not visiting a file")
+                     (buffer-name))))
+
                  ;; Disk check: Missing parent directory.
                  ;; Skip saving to avoid Emacs prompting interactively
                  ;; to create the missing directory.
