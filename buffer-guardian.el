@@ -488,6 +488,7 @@ By default, it only saves when the file exists on the disk."
                         (let ((inhibit-interaction t)
                               (inhibit-message (not buffer-guardian-verbose))
                               (save-silently (not buffer-guardian-verbose)))
+                          (ignore inhibit-interaction)
                           (save-buffer))
                         (when buffer-guardian-verbose
                           (message "[buffer-guardian] Save: '%s'"
