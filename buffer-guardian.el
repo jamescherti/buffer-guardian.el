@@ -357,7 +357,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
         (buffer-guardian-save-buffer-maybe buffer)))))
 
 (defun buffer-guardian--mouse-leave-buffer-hook ()
-  "Save the current buffer when the mouse leaves it."
+  "Save the current buffer when the mouse clicks on another buffer."
   (when (bound-and-true-p buffer-guardian-mode)
     (buffer-guardian-save-buffer-maybe (current-buffer))))
 
