@@ -65,11 +65,12 @@
   :set (lambda (symbol value)
          (set-default symbol value)
          (if (boundp 'after-focus-change-function)
-             (if (and value (bound-and-true-p buffer-guardian-mode))
-                 (add-function :after after-focus-change-function
-                               #'buffer-guardian--on-focus-change)
-               (remove-function after-focus-change-function
-                                #'buffer-guardian--on-focus-change))
+             (with-no-warnings
+               (if (and value (bound-and-true-p buffer-guardian-mode))
+                   (add-function :after after-focus-change-function
+                                 #'buffer-guardian--on-focus-change)
+                 (remove-function after-focus-change-function
+                                  #'buffer-guardian--on-focus-change)))
            ;; Emacs <= 26
            (with-no-warnings
              (if (and value (bound-and-true-p buffer-guardian-mode))
@@ -292,7 +293,7 @@ If INCLUDE-NON-FILE-VISITING is non-nil, the predicate recognizes and returns
 specialized symbols for \='org-src and \='edit-indirect buffers.
 
 Returns: \='org-src, \='edit-indirect, t, or nil."
-  (let ((file-name (buffer-file-name)))
+  (let ((file-name (buffer-file-name (buffer-base-buffer))))
     (when (and (buffer-modified-p)
                (not (buffer-guardian--exclude-regexps-p file-name))
                (or (not buffer-guardian-max-buffer-size)
@@ -432,12 +433,31 @@ By default, it only saves when the file exists on the disk."
              ;; File-visiting buffers
              (t
               (if (verify-visited-file-modtime (current-buffer))
-                  (progn
-                    (let ((inhibit-message (not buffer-guardian-verbose)))
-                      (save-buffer))
-                    (when buffer-guardian-verbose
-                      (message "[buffer-guardian] Save: '%s'"
-                               (buffer-file-name (buffer-base-buffer)))))
+                  ;; When the parent directory of the visited file does not
+                  ;; exist, (save-buffer) halts execution and asks the user for
+                  ;; confirmation in the minibuffer (e.g., "Directory does not
+                  ;; exist; create? (y or n)").
+                  ;;
+                  ;; The following ensures that buffer-guardian is non
+                  ;; interactive.
+                  ;;
+                  ;; TODO: Call buffer-file-name once
+                  (let ((dir (file-name-directory (buffer-file-name
+                                                   (buffer-base-buffer)))))
+                    (if (or (not dir) ; The file name does not contain '/'
+                            (file-directory-p dir))
+                        (progn
+                          (let ((inhibit-message (not buffer-guardian-verbose)))
+                            (save-buffer))
+                          (when buffer-guardian-verbose
+                            (message "[buffer-guardian] Save: '%s'"
+                                     (buffer-file-name (buffer-base-buffer)))))
+                      (when buffer-guardian-verbose
+                        (message
+                         (concat "[buffer-guardian] Warning: Automatic "
+                                 "save skipped for '%s' because the parent "
+                                 "directory does not exist.")
+                         (buffer-file-name (buffer-base-buffer))))))
                 (when buffer-guardian-verbose
                   (message (concat "[buffer-guardian] Warning: Automatic "
                                    "save skipped for '%s' because the file "
