@@ -5,31 +5,25 @@
 
 The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
-**By default, `buffer-guardian-mode` saves a buffer when:**
+**By default, `buffer-guardian-mode` saves file-visiting buffers when:**
 - Switching to another buffer.
 - Switching to another window or frame.
+- The window configuration changes (e.g., window splits).
 - The mouse pointer leaves the current window.
 - The minibuffer is opened.
 - Emacs loses focus.
 
 In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
 
-## Features
-
-Features enabled by default:
-* Save the current buffer when switching to another buffer. (Variable: `buffer-guardian-save-on-buffer-switch`)
-* Save the current buffer when switching to another window or frame. (Variable: `buffer-guardian-save-on-window-change`)
-* Save the current buffer when the minibuffer is opened. (Variable: `buffer-guardian-save-on-minibuffer`)
-* Save all modified buffers when Emacs loses focus. (Variable: `buffer-guardian-save-on-focus-loss`)
-
-Features disabled by default:
-* Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
-* Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
-* Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
-* Prevent saving files that do not exist on disk. (Variable: `buffer-guardian-inhibit-saving-nonexistent-files`)
-* Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
-* Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
-* Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
+Other features that are **disabled** by default:
+- Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-same-buffer-on-window-change`)
+- Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
+- Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
+- Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
+- Prevent saving files that do not exist on disk. (Variable: `buffer-guardian-inhibit-saving-nonexistent-files`)
+- Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
+- Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
+- Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
 
 ## Installation
 
@@ -60,7 +54,7 @@ To install *buffer-guardian* with `straight.el`:
 
 To install *buffer-guardian* with `use-package` and `:vc` (Emacs >= 30):
 
-``` emacs-lisp
+```emacs-lisp
 (use-package buffer-guardian
   :vc (:url "https://github.com/jamescherti/buffer-guardian.el"
        :rev :newest)
@@ -112,6 +106,8 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 * `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
 * `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
+* `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
+* `buffer-guardian-save-same-buffer-on-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
 
 ### Timers
 

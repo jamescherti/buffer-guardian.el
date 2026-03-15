@@ -118,6 +118,23 @@
                         #'buffer-guardian--mouse-leave-buffer-hook)))
   :group 'buffer-guardian)
 
+(defcustom buffer-guardian-save-on-window-configuration-change t
+  "Save the current buffer when `window-configuration-change-hook' runs."
+  :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (if (and value (bound-and-true-p buffer-guardian-mode))
+             (add-hook 'window-configuration-change-hook
+                       #'buffer-guardian--window-configuration-change)
+           (remove-hook 'window-configuration-change-hook
+                        #'buffer-guardian--window-configuration-change)))
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-save-same-buffer-on-window-change nil
+  "Save the buffer even if the window change results in the same buffer."
+  :type 'boolean
+  :group 'buffer-guardian)
+
 (defvar buffer-guardian--save-all-buffers-timer nil
   "Internal Timer object for saving all buffers.")
 
@@ -359,7 +376,8 @@ OBJECT can be a frame or a window."
     (when (and frame window)
       (let ((buffer (window-buffer window)))
         (when (buffer-live-p buffer)
-          (unless (eq buffer buffer-guardian--previous-buffer)
+          (when (or buffer-guardian-save-same-buffer-on-window-change
+                    (not (eq buffer buffer-guardian--previous-buffer)))
             ;; Save previous buffer
             (when (buffer-live-p buffer-guardian--previous-buffer)
               (buffer-guardian-save-buffer-maybe
@@ -378,6 +396,12 @@ OBJECT can be a frame or a window."
   (when (and buffer-guardian-save-on-window-change
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
+
+(defun buffer-guardian--window-configuration-change ()
+  "Run on window configuration change."
+  (when (and buffer-guardian-save-on-window-configuration-change
+             (bound-and-true-p buffer-guardian-mode))
+    (buffer-guardian--on-buffer-change (selected-window))))
 
 ;;; Functions
 
@@ -440,6 +464,7 @@ BUFFER-LIST is the list of buffers."
                     buffer-guardian-save-on-minibuffer
                     buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-change
+                    buffer-guardian-save-on-window-configuration-change
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
                     buffer-guardian-save-all-trigger-hooks
