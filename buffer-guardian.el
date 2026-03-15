@@ -483,12 +483,24 @@ By default, it only saves when the file exists on the disk."
                              file-name)))
 
                  (t
-                  (let ((inhibit-message
-                         (not buffer-guardian-verbose)))
-                    (save-buffer))
-                  (when buffer-guardian-verbose
-                    (message "[buffer-guardian] Save: '%s'"
-                             file-name)))))))))))))
+                  (condition-case err
+                      (progn
+                        (let ((inhibit-interaction t)
+                              (inhibit-message (not buffer-guardian-verbose))
+                              (save-silently (not buffer-guardian-verbose)))
+                          (save-buffer))
+                        (when buffer-guardian-verbose
+                          (message "[buffer-guardian] Save: '%s'"
+                                   file-name)))
+                    (inhibited-interaction
+                     (message
+                      (concat
+                       "[buffer-guardian] Error: 'save-buffer' attempted an "
+                       "interactive prompt in buffer '%s'. It is expected to "
+                       "be non-interactive. Error: %s. Please report this "
+                       "issue to the `buffer-guardian' author.")
+                      (buffer-name)
+                      (error-message-string err)))))))))))))))
 
 ;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
