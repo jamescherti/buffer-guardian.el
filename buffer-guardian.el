@@ -483,7 +483,7 @@ By default, it only saves when the file exists on the disk."
                              file-name)))
 
                  (t
-                  (condition-case err
+                  (condition-case nil
                       (progn
                         (let ((inhibit-interaction t)
                               (inhibit-message (not buffer-guardian-verbose))
@@ -498,10 +498,9 @@ By default, it only saves when the file exists on the disk."
                       (concat
                        "[buffer-guardian] Error: 'save-buffer' attempted an "
                        "interactive prompt in buffer '%s'. It is expected to "
-                       "be non-interactive. Error: %s. Please report this "
+                       "be non-interactive. Please report this "
                        "issue to the `buffer-guardian' author.")
-                      (buffer-name)
-                      (error-message-string err)))))))))))))))
+                      (buffer-name)))))))))))))))
 
 ;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
