@@ -299,17 +299,19 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
                (or (not buffer-guardian-max-buffer-size)
                    (< buffer-guardian-max-buffer-size 0)
                    (<= (buffer-size) buffer-guardian-max-buffer-size))
-               (seq-every-p (lambda (pred)
-                              (when (functionp pred)
-                                (condition-case err
-                                    (funcall pred)
-                                  (error
-                                   (display-warning
-                                    'buffer-guardian
-                                    (format "Predicate failed: %S" err)
-                                    :warning)
-                                   nil))))
-                            buffer-guardian-predicate-functions))
+               (if buffer-guardian-predicate-functions
+                   (seq-every-p (lambda (pred)
+                                  (when (functionp pred)
+                                    (condition-case err
+                                        (funcall pred)
+                                      (error
+                                       (display-warning
+                                        'buffer-guardian
+                                        (format "Predicate failed: %S" err)
+                                        :warning)
+                                       nil))))
+                                buffer-guardian-predicate-functions)
+                 t))
       (cond
        ;; Specialized buffers
        ((and include-non-file-visiting
@@ -325,13 +327,32 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 
        ;; Standard File-visiting logic
        (file-name
-        (and
-         (if (file-remote-p file-name)
-             (not buffer-guardian-inhibit-saving-remote-files)
-           (file-writable-p file-name))
-         (if buffer-guardian-inhibit-saving-nonexistent-files
-             (file-exists-p file-name)
-           t)))))))
+        (cond
+         ;; Fast string check: Short-circuit if remote saving is disabled
+         ((and buffer-guardian-inhibit-saving-remote-files
+               (file-remote-p file-name))
+          (when buffer-guardian-verbose
+            (message (concat "[buffer-guardian] Warning: Automatic save "
+                             "skipped for '%s' because it is a remote file.")
+                     file-name))
+          ;; Return nil
+          nil)
+
+         ;; Disk check: Verify file existence
+         ((and buffer-guardian-inhibit-saving-nonexistent-files
+               (not (file-exists-p file-name)))
+          (when buffer-guardian-verbose
+            (message (concat "[buffer-guardian] Warning: Automatic save "
+                             "skipped for '%s' because the file does not "
+                             "exist.")
+                     file-name))
+          ;; Return nil
+          nil)
+
+         ;; Passed all checks
+         (t
+          ;; Return t
+          t)))))))
 
 (defun buffer-guardian--before-advice-save-current-buffer (&rest _)
   "Save current buffers."
@@ -432,37 +453,42 @@ By default, it only saves when the file exists on the disk."
 
              ;; File-visiting buffers
              (t
-              (if (verify-visited-file-modtime (current-buffer))
-                  ;; When the parent directory of the visited file does not
-                  ;; exist, (save-buffer) halts execution and asks the user for
-                  ;; confirmation in the minibuffer (e.g., "Directory does not
-                  ;; exist; create? (y or n)").
-                  ;;
-                  ;; The following ensures that buffer-guardian is non
-                  ;; interactive.
-                  ;;
-                  ;; TODO: Call buffer-file-name once
-                  (let ((dir (file-name-directory (buffer-file-name
-                                                   (buffer-base-buffer)))))
-                    (if (or (not dir) ; The file name does not contain '/'
-                            (file-directory-p dir))
-                        (progn
-                          (let ((inhibit-message (not buffer-guardian-verbose)))
-                            (save-buffer))
-                          (when buffer-guardian-verbose
-                            (message "[buffer-guardian] Save: '%s'"
-                                     (buffer-file-name (buffer-base-buffer)))))
-                      (when buffer-guardian-verbose
-                        (message
-                         (concat "[buffer-guardian] Warning: Automatic "
-                                 "save skipped for '%s' because the parent "
-                                 "directory does not exist.")
-                         (buffer-file-name (buffer-base-buffer))))))
-                (when buffer-guardian-verbose
-                  (message (concat "[buffer-guardian] Warning: Automatic "
-                                   "save skipped for '%s' because the file "
-                                   "was modified externally.")
-                           (buffer-file-name (buffer-base-buffer)))))))))))))
+              (let* ((file-name (buffer-file-name (buffer-base-buffer)))
+                     (file-dir (file-name-directory file-name)))
+                (cond
+                 ;; Disk check: Missing parent directory.
+                 ;; Skip saving to avoid Emacs prompting interactively
+                 ;; to create the missing directory.
+                 ((and file-dir (not (file-directory-p file-dir)))
+                  (when buffer-guardian-verbose
+                    (message
+                     (concat "[buffer-guardian] Warning: Automatic "
+                             "save skipped for '%s' because the parent "
+                             "directory does not exist.")
+                     file-name)))
+
+                 ((not (file-writable-p file-name))
+                  (when buffer-guardian-verbose
+                    (message
+                     (concat "[buffer-guardian] Warning: Automatic save "
+                             "skipped for '%s' because the file is not "
+                             "writable.")
+                     file-name)))
+
+                 ((not (verify-visited-file-modtime (current-buffer)))
+                  (when buffer-guardian-verbose
+                    (message (concat "[buffer-guardian] Warning: Automatic "
+                                     "save skipped for '%s' because the file "
+                                     "was modified externally.")
+                             file-name)))
+
+                 (t
+                  (let ((inhibit-message
+                         (not buffer-guardian-verbose)))
+                    (save-buffer))
+                  (when buffer-guardian-verbose
+                    (message "[buffer-guardian] Save: '%s'"
+                             file-name)))))))))))))
 
 ;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
