@@ -4,7 +4,7 @@
 ;; URL: https://github.com/jamescherti/jc-dev
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: maint
-;; Version: 0.9.9
+;; Version: 1.0.0
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software; you can redistribute it and/or modify
