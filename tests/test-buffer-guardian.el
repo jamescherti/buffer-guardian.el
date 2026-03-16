@@ -178,7 +178,7 @@ NAME is the buffer name and BODY is executed."
   "Test that switching windows saves the previous buffer."
   (let ((saved-bufs nil)
         (buffer-guardian-mode t)
-        (buffer-guardian-save-on-window-change t)
+        (buffer-guardian-save-on-window-selection-change t)
         (buffer-guardian--previous-buffer nil))
     (test-buffer-guardian--with-test-buffer "buf-old.txt"
       (let ((old-buf (current-buffer)))

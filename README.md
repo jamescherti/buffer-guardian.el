@@ -85,10 +85,10 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 ### Triggers
 
-* `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when Emacs loses focus.
+* `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when the Emacs frame loses focus.
 * `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
-* `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
-* `buffer-guardian-save-on-window-change` (Default: `t`): Save when `window-selection-change-functions` runs.
+* `buffer-guardian-save-on-buffer-change` (Default: `t`): Save when `window-buffer-change-functions` runs.
+* `buffer-guardian-save-on-window-selection-change` (Default: `t`): Save when `window-selection-change-functions` runs.
 * `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
 * `buffer-guardian-save-same-buffer-on-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
 

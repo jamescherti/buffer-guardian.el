@@ -105,7 +105,7 @@
                         #'buffer-guardian--minibuffer-setup-hook)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-buffer-switch t
+(defcustom buffer-guardian-save-on-buffer-change t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
   :set (lambda (symbol value)
@@ -117,7 +117,7 @@
                         #'buffer-guardian--window-buffer-change-functions)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-window-change t
+(defcustom buffer-guardian-save-on-window-selection-change t
   "Save the current buffer when `window-selection-change-functions' runs."
   :type 'boolean
   :set (lambda (symbol value)
@@ -424,13 +424,13 @@ OBJECT can be a frame or a window."
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-buffer-switch
+  (when (and buffer-guardian-save-on-buffer-change
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
 (defun buffer-guardian--window-selection-change (object)
   "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-window-change
+  (when (and buffer-guardian-save-on-window-selection-change
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
@@ -543,8 +543,8 @@ BUFFER-LIST is the list of buffers."
   :group 'buffer-guardian
   (let ((settings '(buffer-guardian-save-on-focus-loss
                     buffer-guardian-save-on-minibuffer
-                    buffer-guardian-save-on-buffer-switch
-                    buffer-guardian-save-on-window-change
+                    buffer-guardian-save-on-buffer-change
+                    buffer-guardian-save-on-window-selection-change
                     buffer-guardian-save-on-window-configuration-change
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
