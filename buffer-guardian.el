@@ -250,8 +250,8 @@ When any of these hooks run, all buffers are saved."
 (defcustom buffer-guardian-save-trigger-functions nil
   "List of function symbols to be advised by `buffer-guardian'.
 
-A :before advice will be added to each function in this list so that save the
-current buffer before the function executes.
+A :before advice is added to each function in this list so that the current
+buffer is saved before the function executes.
 
 This mechanism allows automatic buffer saving to be triggered by specific
 commands or operations (e.g., window switching or navigation).
