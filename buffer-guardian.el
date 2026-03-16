@@ -1,6 +1,6 @@
 ;;; buffer-guardian.el --- Automatically Save Buffers Without Manual Intervention -*- lexical-binding: t -*-
 
-;; Author: James Cherti
+;; Author: James Cherti <https://www.jamescherti.com/contact/>
 ;; URL: https://github.com/jamescherti/jc-dev
 ;; Package-Requires: ((emacs "25.1"))
 ;; Keywords: maint
@@ -317,7 +317,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
        ((and include-non-file-visiting
              buffer-guardian-handle-org-src
              (fboundp 'org-src-edit-buffer-p)
-             (funcall 'org-src-edit-buffer-p))
+             (org-src-edit-buffer-p))
         'org-src)
 
        ((and include-non-file-visiting
@@ -439,14 +439,14 @@ By default, it only saves when the file exists on the disk."
             (cond
              ((and (eq predicate-result 'org-src)
                    (fboundp 'org-edit-src-save))
-              (funcall 'org-edit-src-save)
+              (org-edit-src-save)
               (when buffer-guardian-verbose
                 (message "[buffer-guardian] Org-src Save: '%s'"
                          (buffer-name))))
 
              ((and (eq predicate-result 'edit-indirect)
                    (fboundp 'edit-indirect--commit))
-              (funcall 'edit-indirect--commit)
+              (edit-indirect--commit)
               (when buffer-guardian-verbose
                 (message "[buffer-guardian] Edit-indirect Save: '%s'"
                          (buffer-name))))
