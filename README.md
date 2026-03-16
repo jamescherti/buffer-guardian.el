@@ -45,8 +45,9 @@ To install **buffer-guardian** from MELPA:
   :custom
   ;; When non-nil, include remote files in the auto-save process
   (buffer-guardian-inhibit-saving-remote-files t)
+
   ;; When non-nil, buffers visiting nonexistent files are not saved
-  (buffer-guardian-inhibit-saving-nonexistent-files t)
+  (buffer-guardian-inhibit-saving-nonexistent-files nil)
 
   :hook
   (after-init . buffer-guardian-mode))
@@ -69,7 +70,7 @@ Here is how to install *buffer-guardian* on Doom Emacs:
   ;; When non-nil, include remote files in the auto-save process
   (setq buffer-guardian-inhibit-saving-remote-files t)
   ;; When non-nil, buffers visiting nonexistent files are not saved
-  (setq buffer-guardian-inhibit-saving-nonexistent-files t)
+  (setq buffer-guardian-inhibit-saving-nonexistent-files nil)
 
   (buffer-guardian-mode))
 ```
