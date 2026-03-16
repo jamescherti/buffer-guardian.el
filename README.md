@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
+The **buffer-guardian** Emacs package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
 **By default, `buffer-guardian-mode` saves file-visiting buffers when:**
 - Switching to another buffer.
