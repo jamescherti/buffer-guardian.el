@@ -9,7 +9,6 @@ The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode t
 - Switching to another buffer.
 - Switching to another window or frame.
 - The window configuration changes (e.g., window splits).
-- The mouse pointer leaves the current window.
 - The minibuffer is opened.
 - Emacs loses focus.
 
@@ -29,7 +28,7 @@ Other features that are **disabled** by default:
 - Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
 - Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
 
-(Buffer Guardian is designed to run silently in the background without interrupting your workflow. To achieve this, it enforces strict non-interactive operations and proactively skips saving in scenarios that would normally trigger an interactive prompt. For example, the package will safely abort the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. Additionally, it temporarily disables interactive prompts during the save execution, gracefully catching and logging errors if a third-party hook attempts to ask for user input, thereby ensuring that your editor never freezes during an automatic background save.)
+(Buffer Guardian runs in the background without interrupting the workflow. For example, the package safely aborts the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. Additionally, it gracefully catches and logs errors if a third-party hook attempts to request user input, ensuring that the editor never freezes during an automatic background save.)
 
 ## Installation
 
