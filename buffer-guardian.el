@@ -93,7 +93,7 @@
                (remove-hook 'focus-out-hook #'buffer-guardian--on-focus-change)))))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-minibuffer t
+(defcustom buffer-guardian-save-on-minibuffer-setup t
   "Save the current buffer when the minibuffer is opened."
   :type 'boolean
   :set (lambda (symbol value)
@@ -146,7 +146,7 @@
                         #'buffer-guardian--window-configuration-change)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-same-buffer-on-window-change nil
+(defcustom buffer-guardian-save-on-same-buffer-window-change nil
   "Save the buffer even if the window change results in the same buffer."
   :type 'boolean
   :group 'buffer-guardian)
@@ -386,7 +386,7 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
 (defun buffer-guardian--minibuffer-setup-hook ()
   "Save the buffer whenever the minibuffer is open."
   (when (and (bound-and-true-p buffer-guardian-mode)
-             buffer-guardian-save-on-minibuffer)
+             buffer-guardian-save-on-minibuffer-setup)
     (let* ((window (minibuffer-selected-window))
            (buffer (when window
                      (window-buffer window))))
@@ -413,7 +413,7 @@ OBJECT can be a frame or a window."
     (when (and frame window)
       (let ((buffer (window-buffer window)))
         (when (buffer-live-p buffer)
-          (when (or buffer-guardian-save-same-buffer-on-window-change
+          (when (or buffer-guardian-save-on-same-buffer-window-change
                     (not (eq buffer buffer-guardian--previous-buffer)))
             ;; Save previous buffer
             (when (buffer-live-p buffer-guardian--previous-buffer)
@@ -542,7 +542,7 @@ BUFFER-LIST is the list of buffers."
   :lighter " BGuardian"
   :group 'buffer-guardian
   (let ((settings '(buffer-guardian-save-on-focus-loss
-                    buffer-guardian-save-on-minibuffer
+                    buffer-guardian-save-on-minibuffer-setup
                     buffer-guardian-save-on-buffer-change
                     buffer-guardian-save-on-window-selection-change
                     buffer-guardian-save-on-window-configuration-change

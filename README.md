@@ -19,7 +19,7 @@ In addition to regular file-visiting buffers, `buffer-guardian-mode` also handle
 If this package enhances your workflow, please show your support by **⭐ starring buffer-guardian on GitHub** to help more users discover its benefits.
 
 Other features that are **disabled** by default:
-- Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-same-buffer-on-window-change`)
+- Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-on-same-buffer-window-change`)
 - Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
 - Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
 - Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
@@ -86,11 +86,11 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 ### Triggers
 
 * `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when the Emacs frame loses focus.
-* `buffer-guardian-save-on-minibuffer` (Default: `t`): Save when the minibuffer opens.
+* `buffer-guardian-save-on-minibuffer-setup` (Default: `t`): Save when the minibuffer opens.
 * `buffer-guardian-save-on-buffer-change` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-selection-change` (Default: `t`): Save when `window-selection-change-functions` runs.
 * `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
-* `buffer-guardian-save-same-buffer-on-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
+* `buffer-guardian-save-on-same-buffer-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
 
 ### Timers
 

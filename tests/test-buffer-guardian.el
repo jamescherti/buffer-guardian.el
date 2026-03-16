@@ -210,7 +210,7 @@ NAME is the buffer name and BODY is executed."
 ;;   "Test that opening the minibuffer triggers a save on the selected window."
 ;;   (let ((saved-buffer nil)
 ;;         (buffer-guardian-mode t)
-;;         (buffer-guardian-save-on-minibuffer t))
+;;         (buffer-guardian-save-on-minibuffer-setup t))
 ;;     (test-buffer-guardian--with-test-buffer "mini.txt"
 ;;       (cl-letf (((symbol-function 'buffer-guardian-save-buffer-maybe)
 ;;                  (lambda (buf) (setq saved-buffer buf)))
