@@ -159,7 +159,7 @@
 
 (defcustom buffer-guardian-save-all-buffers-interval nil
   "Interval in seconds for automatically saving all buffers.
-This allows you to periodically save all file visiting buffers at once,
+This allows you to periodically save all file-visiting buffers at once,
 repeating the operation at the specified interval.
 
 If set to nil, this feature is disabled."
@@ -177,8 +177,8 @@ If set to nil, this feature is disabled."
 
 (defcustom buffer-guardian-save-all-buffers-idle nil
   "Seconds for automatically saving all buffers when the user is idle.
-This allows you save all file-visiting buffers at once, repeating the operation
-at the specified interval.
+This allows you to save all file-visiting buffers at once, repeating the
+operation at the specified interval.
 
 If set to nil, this feature is disabled."
   :type '(choice (integer :tag "Seconds")
@@ -399,7 +399,12 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
     (buffer-guardian-save-buffer-maybe (current-buffer))))
 
 (defvar buffer-guardian--previous-buffer nil
-  "Internal. Tracks the last seen buffer for auto-saving on window changes.")
+  "Internal. Tracks the last seen buffer for auto-saving on window changes.
+
+Because window change hooks execute after the focus has already shifted, the
+`buffer-guardian--previous-buffer' is the most reliable way to track the buffer
+the user just left, regardless of whether they switched windows, split windows,
+or moved to a new frame.")
 
 (defun buffer-guardian--on-buffer-change (&optional object)
   "Function called by `window-buffer-change-functions'.
@@ -527,7 +532,7 @@ By default, it only saves when the file exists on the disk."
 
 ;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
-  "Save some modified buffers that are visiting files that exist on the disk.
+  "Save all modified buffers that are visiting files that exist on the disk.
 BUFFER-LIST is the list of buffers."
   (when (bound-and-true-p buffer-guardian-mode)
     (dolist (buffer (or buffer-list (buffer-list)))
