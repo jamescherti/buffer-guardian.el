@@ -105,7 +105,7 @@
                         #'buffer-guardian--minibuffer-setup-hook)))
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-save-on-buffer-change t
+(defcustom buffer-guardian-save-on-buffer-switch t
   "Save the current buffer when `window-buffer-change-functions' runs."
   :type 'boolean
   :set (lambda (symbol value)
@@ -177,7 +177,7 @@ If set to nil, this feature is disabled."
 
 (defcustom buffer-guardian-save-all-buffers-idle nil
   "Seconds for automatically saving all buffers when the user is idle.
-This allows you save all file visiting buffers at once, repeating the operation
+This allows you save all file-visiting buffers at once, repeating the operation
 at the specified interval.
 
 If set to nil, this feature is disabled."
@@ -209,7 +209,7 @@ This setting is used by `buffer-guardian--predicate'."
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-exclude-regexps nil
-  "A list of regexps for buffer file name excluded from buffer-guardian.
+  "A list of regexps for buffer file names excluded from buffer-guardian.
 When a buffer file name matches any of the regexps it is ignored."
   :group 'buffer-guardian
   :type '(repeat regexp))
@@ -228,7 +228,7 @@ whether this buffer needs to be saved or not, then it must return t."
   :group 'buffer-guardian
   :type '(repeat function))
 
-(defcustom buffer-guardian-save-all-trigger-hooks nil
+(defcustom buffer-guardian-save-all-buffers-trigger-hooks nil
   "List of hook symbols that trigger saving of all modified buffers.
 When any of these hooks run, all buffers are saved."
   :group 'buffer-guardian
@@ -247,7 +247,7 @@ When any of these hooks run, all buffers are saved."
 (defvar buffer-guardian--list-advised-functions nil
   "Internal list of advised functions.")
 
-(defcustom buffer-guardian-functions-auto-save-current-buffer nil
+(defcustom buffer-guardian-save-trigger-functions nil
   "List of function symbols to be advised by `buffer-guardian'.
 
 A :before advice will be added to each function in this list so that save the
@@ -424,7 +424,7 @@ OBJECT can be a frame or a window."
 
 (defun buffer-guardian--window-buffer-change-functions (object)
   "Run on window change in OBJECT (frame or window)."
-  (when (and buffer-guardian-save-on-buffer-change
+  (when (and buffer-guardian-save-on-buffer-switch
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
@@ -543,13 +543,13 @@ BUFFER-LIST is the list of buffers."
   :group 'buffer-guardian
   (let ((settings '(buffer-guardian-save-on-focus-loss
                     buffer-guardian-save-on-minibuffer-setup
-                    buffer-guardian-save-on-buffer-change
+                    buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-selection-change
                     buffer-guardian-save-on-window-configuration-change
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
-                    buffer-guardian-save-all-trigger-hooks
-                    buffer-guardian-functions-auto-save-current-buffer)))
+                    buffer-guardian-save-all-buffers-trigger-hooks
+                    buffer-guardian-save-trigger-functions)))
     (dolist (setting settings)
       (funcall (or (get setting 'custom-set) #'set-default)
                setting (symbol-value setting)))))

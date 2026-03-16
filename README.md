@@ -49,6 +49,15 @@ To install **buffer-guardian** from MELPA:
   ;; When non-nil, buffers visiting nonexistent files are not saved
   (buffer-guardian-inhibit-saving-nonexistent-files nil)
 
+  ;; Save the buffer even if the window change results in the same buffer
+  (buffer-guardian-save-on-same-buffer-window-change t)
+
+  ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
+  (buffer-guardian-verbose nil)
+
+  ;; Save all buffers after N seconds of user idle time. (Disabled by default)
+  ;; (buffer-guardian-save-all-buffers-idle 30)
+
   :hook
   (after-init . buffer-guardian-mode))
 ```
@@ -69,10 +78,20 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 (after! buffer-guardian
   ;; When non-nil, include remote files in the auto-save process
   (setq buffer-guardian-inhibit-saving-remote-files t)
+
   ;; When non-nil, buffers visiting nonexistent files are not saved
   (setq buffer-guardian-inhibit-saving-nonexistent-files nil)
 
-  (buffer-guardian-mode))
+  ;; Save the buffer even if the window change results in the same buffer
+  (setq buffer-guardian-save-on-same-buffer-window-change t)
+
+  ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
+  (setq buffer-guardian-verbose nil)
+
+  ;; Save all buffers after N seconds of user idle time. (Disabled by default)
+  ;; (setq buffer-guardian-save-all-buffers-idle 30)
+
+  (buffer-guardian-mode 1))
 ```
 
 3. Run the `doom sync` command:
@@ -88,7 +107,7 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 * `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when the Emacs frame loses focus.
 * `buffer-guardian-save-on-minibuffer-setup` (Default: `t`): Save when the minibuffer opens.
-* `buffer-guardian-save-on-buffer-change` (Default: `t`): Save when `window-buffer-change-functions` runs.
+* `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
 * `buffer-guardian-save-on-window-selection-change` (Default: `t`): Save when `window-selection-change-functions` runs.
 * `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
 * `buffer-guardian-save-on-same-buffer-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
@@ -113,8 +132,8 @@ You can customize `buffer-guardian` to fit your workflow. Below are the main cus
 
 ### Advanced
 
-* `buffer-guardian-save-all-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
-* `buffer-guardian-functions-auto-save-current-buffer`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
+* `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
+* `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
 ## Author and License

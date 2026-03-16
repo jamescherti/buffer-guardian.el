@@ -234,18 +234,18 @@ NAME is the buffer name and BODY is executed."
                  (lambda (&rest _)
                    (setq save-called t))))
         (let ((buffer-guardian--list-advised-functions nil)
-              (original-val buffer-guardian-functions-auto-save-current-buffer))
+              (original-val buffer-guardian-save-trigger-functions))
           (unwind-protect
               (progn
                 ;; Apply advice
                 (custom-set-variables
-                 '(buffer-guardian-functions-auto-save-current-buffer
+                 '(buffer-guardian-save-trigger-functions
                    '(test-buffer-guardian--mock-cmd)))
                 (test-buffer-guardian--mock-cmd)
                 (should save-called))
             ;; Cleanup advice safely
             (custom-set-variables
-             `(buffer-guardian-functions-auto-save-current-buffer ',original-val))))))))
+             `(buffer-guardian-save-trigger-functions ',original-val))))))))
 
 ;;; Test Cases - Save Execution Logic
 
