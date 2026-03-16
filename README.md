@@ -12,7 +12,7 @@ The **buffer-guardian** package provides `buffer-guardian-mode`, a global mode t
 - The minibuffer is opened.
 - Emacs loses focus.
 
-Skip to: [Installation](#Installation)
+(Skip to: [Installation](#Installation))
 
 In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
 
@@ -32,42 +32,20 @@ Other features that are **disabled** by default:
 
 ## Installation
 
-### Emacs: use-package and straight (Emacs version < 30)
+### Installation from MELPA
 
-To install *buffer-guardian* with `straight.el`:
+To install **buffer-guardian** from MELPA:
 
-1. It if hasn't already been done, [add the straight.el bootstrap code](https://github.com/radian-software/straight.el?tab=readme-ov-file#getting-started) to your init file.
-2. Add the following code to the Emacs init file:
-```emacs-lisp
-(use-package buffer-guardian
-  :straight (buffer-guardian
-             :type git
-             :host github
-             :repo "jamescherti/buffer-guardian.el")
+1. If you haven't already done so, [add MELPA repository to your Emacs configuration](https://melpa.org/#/getting-started).
 
-  :custom
-  ;; When non-nil, include remote files in the auto-save process
-  (buffer-guardian-inhibit-saving-remote-files t)
-  ;; When set to nil, buffers visiting nonexistent files can still be saved.
-  (buffer-guardian-inhibit-saving-nonexistent-files t)
-
-  :hook
-  (after-init . buffer-guardian-mode))
-```
-
-### Alternative installation: use-package and :vc (Built-in feature in Emacs version >= 30)
-
-To install *buffer-guardian* with `use-package` and `:vc` (Emacs >= 30):
+2. Add the following code to your Emacs init file to install **buffer-guardian** from MELPA:
 
 ```emacs-lisp
 (use-package buffer-guardian
-  :vc (:url "https://github.com/jamescherti/buffer-guardian.el"
-       :rev :newest)
-
   :custom
   ;; When non-nil, include remote files in the auto-save process
   (buffer-guardian-inhibit-saving-remote-files t)
-  ;; When set to nil, buffers visiting nonexistent files can still be saved.
+  ;; When non-nil, buffers visiting nonexistent files are not saved
   (buffer-guardian-inhibit-saving-nonexistent-files t)
 
   :hook
@@ -90,7 +68,7 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 (after! buffer-guardian
   ;; When non-nil, include remote files in the auto-save process
   (setq buffer-guardian-inhibit-saving-remote-files t)
-  ;; When set to nil, buffers visiting nonexistent files can still be saved.
+  ;; When non-nil, buffers visiting nonexistent files are not saved
   (setq buffer-guardian-inhibit-saving-nonexistent-files t)
 
   (buffer-guardian-mode))
