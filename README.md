@@ -136,21 +136,6 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 * `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
-## Frequently asked questions
-
-### How does buffer-guardian compare with super-save?
-
-The **buffer-guardian** package can do everything that **super-save** does, plus many other features.
-
-**Buffer-guardian** offers more reliability by integrating directly into core Emacs window system hooks, such as `window-buffer-change-functions` and `window-selection-change-functions`. This ensures that whenever you leave a buffer, it is saved regardless of the method used. In contrast, **super-save** relies heavily on advising specific Emacs commands like `switch-to-buffer` or `next-buffer`. If you switch buffers using a custom command, a mouse click, or a package not explicitly included in the advice list, the auto-save might not trigger.
-
-In addition:
-
-- **buffer-guardian** natively handles special non-file-visiting buffers. It can automatically save `org-src` blocks and `edit-indirect` buffers, committing those changes back to the parent document without requiring manual confirmation.
-- To ensure background saves never interrupt your workflow, **buffer-guardian** prevents Emacs from issuing prompts during an auto-save. It achieves this by checking for missing parent directories, verifying file writability, and binding `inhibit-interaction` to keep the process silent and invisible.
-- When handling focus loss, **buffer-guardian** defaults to the modern `after-focus-change-function` API in recent Emacs versions, rather than relying solely on the older `focus-out-hook` used by **super-save**.
-- **buffer-guardian** provides control over time-based saves, allowing you to configure both a strict interval timer and an idle timer simultaneously.
-
 ## Author and License
 
 The *buffer-guardian* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version.
