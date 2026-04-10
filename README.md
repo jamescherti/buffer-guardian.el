@@ -58,6 +58,9 @@ To install **buffer-guardian** from MELPA:
   ;; Save all buffers after N seconds of user idle time. (Disabled by default)
   ;; (buffer-guardian-save-all-buffers-idle 30)
 
+  ;; Save all buffers every N seconds. (Disabled by default)
+  ;; (setq buffer-guardian-save-all-buffers-interval (* 60 30))
+
   :hook
   (after-init . buffer-guardian-mode))
 ```
@@ -90,6 +93,9 @@ Here is how to install *buffer-guardian* on Doom Emacs:
 
   ;; Save all buffers after N seconds of user idle time. (Disabled by default)
   ;; (setq buffer-guardian-save-all-buffers-idle 30)
+
+  ;; Save all buffers every N seconds. (Disabled by default)
+  ;; (setq buffer-guardian-save-all-buffers-interval (* 60 30))
 
   (buffer-guardian-mode 1))
 ```
