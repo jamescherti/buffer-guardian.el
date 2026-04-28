@@ -292,6 +292,26 @@ buffers ensures modifications are committed back to the original parent buffer."
   :type 'boolean
   :group 'buffer-guardian)
 
+(defcustom buffer-guardian-debounce-delay 1.0
+  "Delay in seconds before saving after a trigger event (e.g., window change).
+
+This prevents excessive saving if events fire rapidly. Because Emacs is
+single-threaded and disk I/O operations are expensive, saving buffers on every
+single trigger would cause the editor to freeze.
+
+Certain actions trigger hooks aggressively. For example, resizing a window with
+the mouse or packages that automatically rebuild layouts can trigger the change
+hook dozens of times in a single second.
+
+This delay makes buffer-guardian wait for a period of absolute user inactivity
+before executing the global save operation. If another trigger event occurs
+before the delay expires, the countdown resets to zero."
+  :type 'number
+  :group 'buffer-guardian)
+
+(defvar buffer-guardian--debounce-timer nil
+  "Internal timer used to debounce save operations.")
+
 ;;; Internal functions
 
 (defun buffer-guardian--exclude-regexps-p (filename)
@@ -439,11 +459,19 @@ OBJECT can be a frame or a window."
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
+(defun buffer-guardian-save-all-buffers-debounced ()
+  "Debounced version of `buffer-guardian-save-all-buffers'."
+  (when buffer-guardian--debounce-timer
+    (cancel-timer buffer-guardian--debounce-timer))
+  (setq buffer-guardian--debounce-timer
+        (run-with-timer buffer-guardian-debounce-delay nil
+                        #'buffer-guardian-save-all-buffers)))
+
 (defun buffer-guardian--window-configuration-change ()
   "Run on window configuration change."
   (when (and buffer-guardian-save-on-window-configuration-change
              (bound-and-true-p buffer-guardian-mode))
-    (buffer-guardian--on-buffer-change (selected-window))))
+    (buffer-guardian-save-all-buffers-debounced)))
 
 ;;; Functions
 
@@ -536,7 +564,8 @@ By default, it only saves when the file exists on the disk."
 BUFFER-LIST is the list of buffers."
   (when (bound-and-true-p buffer-guardian-mode)
     (dolist (buffer (or buffer-list (buffer-list)))
-      (buffer-guardian-save-buffer-maybe buffer))))
+      (when (and (buffer-live-p buffer) (buffer-modified-p buffer))
+        (buffer-guardian-save-buffer-maybe buffer)))))
 
 ;;; Mode
 

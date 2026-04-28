@@ -28,7 +28,7 @@ Other features that are **disabled** by default:
 - Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
 - Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
 
-(Buffer Guardian runs in the background without interrupting the workflow. For example, the package safely aborts the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. Additionally, it gracefully catches and logs errors if a third-party hook attempts to request user input, ensuring that the editor never freezes during an automatic background save.)
+(Buffer Guardian runs in the background without interrupting the workflow. For example, the package safely aborts the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. It also implements a debouncing mechanism that waits for absolute user inactivity before executing a global save, preventing editor freezes when trigger events fire rapidly like resizing a window. Additionally, it gracefully catches and logs errors if a third-party hook attempts to request user input, ensuring that the editor never freezes during an automatic background save.)
 
 ## Installation
 
