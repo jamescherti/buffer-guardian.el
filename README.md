@@ -32,8 +32,6 @@ Other features that are **disabled** by default:
 
 ## Installation
 
-### Installation from MELPA
-
 To install **buffer-guardian** from MELPA:
 
 1. If you haven't already done so, [add MELPA repository to your Emacs configuration](https://melpa.org/#/getting-started).
@@ -63,46 +61,6 @@ To install **buffer-guardian** from MELPA:
 
   :hook
   (after-init . buffer-guardian-mode))
-```
-
-### Alternative installation: Doom Emacs
-
-Here is how to install *buffer-guardian* on Doom Emacs:
-
-1. Add to the `~/.doom.d/packages.el` file:
-```elisp
-(package! buffer-guardian
-  :recipe
-  (:host github :repo "jamescherti/buffer-guardian.el"))
-```
-
-2. Add to `~/.doom.d/config.el`:
-```elisp
-(after! buffer-guardian
-  ;; When non-nil, include remote files in the auto-save process
-  (setq buffer-guardian-inhibit-saving-remote-files t)
-
-  ;; When non-nil, buffers visiting nonexistent files are not saved
-  (setq buffer-guardian-inhibit-saving-nonexistent-files nil)
-
-  ;; Save the buffer even if the window change results in the same buffer
-  (setq buffer-guardian-save-on-same-buffer-window-change t)
-
-  ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
-  (setq buffer-guardian-verbose nil)
-
-  ;; Save all buffers after N seconds of user idle time. (Disabled by default)
-  ;; (setq buffer-guardian-save-all-buffers-idle 30)
-
-  ;; Save all buffers every N seconds. (Disabled by default)
-  ;; (setq buffer-guardian-save-all-buffers-interval (* 60 30))
-
-  (buffer-guardian-mode 1))
-```
-
-3. Run the `doom sync` command:
-```
-doom sync
 ```
 
 ## Configuration
