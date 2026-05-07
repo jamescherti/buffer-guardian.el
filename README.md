@@ -1,6 +1,8 @@
 # buffer-guardian.el - Automatically Save Emacs Buffers Without Manual Intervention (When Buffers Lose Focus, Regularly, or After Emacs is Idle)
 ![Build Status](https://github.com/jamescherti/buffer-guardian.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-guardian.el)
+[![MELPA](https://melpa.org/packages/buffer-guardian-badge.svg)](https://melpa.org/#/buffer-guardian)
+[![MELPA Stable](https://stable.melpa.org/packages/buffer-guardian-badge.svg)](https://stable.melpa.org/#/buffer-guardian)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
 The **buffer-guardian** Emacs package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
