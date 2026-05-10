@@ -545,7 +545,10 @@ By default, it only saves when the file exists on the disk."
                               (inhibit-message (not buffer-guardian-verbose))
                               (save-silently (not buffer-guardian-verbose)))
                           (ignore inhibit-interaction)
-                          (save-buffer))
+                          ;; Save the base buffer instead of the indirect buffer
+                          (with-current-buffer (or (buffer-base-buffer)
+                                                   (current-buffer))
+                            (save-buffer)))
                         (when buffer-guardian-verbose
                           (message "[buffer-guardian] Save: '%s'"
                                    file-name)))
@@ -569,7 +572,10 @@ By default, it only saves when the file exists on the disk."
 BUFFER-LIST is the list of buffers."
   (when (bound-and-true-p buffer-guardian-mode)
     (dolist (buffer (or buffer-list (buffer-list)))
-      (when (and (buffer-live-p buffer) (buffer-modified-p buffer))
+      (when (and (buffer-live-p buffer)
+                 (buffer-modified-p buffer)
+                 ;; Ignore indirect buffers
+                 (not (buffer-base-buffer buffer)))
         (buffer-guardian-save-buffer-maybe buffer)))))
 
 ;;; Mode
