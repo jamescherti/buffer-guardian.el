@@ -309,6 +309,12 @@ before the delay expires, the countdown resets to zero."
   :type 'number
   :group 'buffer-guardian)
 
+(defvar buffer-guardian--inhibit-interaction t
+  "Internal variable to override `inhibit-interaction' behavior down stack.")
+
+(defvar buffer-guardian--ignore-modified-externally nil
+  "Internal variable to allow manual commands to ignore disk checks safely.")
+
 (defvar buffer-guardian--debounce-timer nil
   "Internal timer used to debounce save operations.")
 
@@ -476,6 +482,48 @@ OBJECT can be a frame or a window."
 ;;; Functions
 
 ;;;###autoload
+(defun buffer-guardian-save-buffer (&optional buffer)
+  "Save BUFFER using the buffer-guardian background logic.
+
+If BUFFER is omitted, it defaults to the current buffer.
+
+This command generally provides a non-interactive save. Unlike the default
+`save-buffer', it avoids interrupting your workflow with standard prompts.
+
+The only exception is if the file has been modified outside of Emacs. In that
+case, it will interactively prompt you to discard your edits and revert the
+buffer. If you decline, the save is safely aborted."
+  (interactive)
+  (let* ((initial-buffer (or buffer (current-buffer)))
+         (target-buffer (or (buffer-base-buffer initial-buffer)
+                            initial-buffer))
+         (file-name (buffer-file-name target-buffer))
+         (buffer-guardian--inhibit-interaction nil)
+         (buffer-guardian--ignore-modified-externally t)
+         (buffer-guardian-inhibit-saving-nonexistent-files nil))
+    (when (buffer-live-p target-buffer)
+      (with-current-buffer target-buffer
+        (when (and file-name
+                   (buffer-modified-p target-buffer)
+                   (file-regular-p file-name)
+                   (not (verify-visited-file-modtime)))
+          ;; Was the file modified outside of Emacs? Revert buffer.
+          (if (yes-or-no-p (format "Discard edits and reread from '%s'? "
+                                   file-name))
+              (revert-buffer :ignore-auto :noconfirm)
+            ;; If user does not discard, ask if they want to overwrite
+            (if (yes-or-no-p (format "Overwrite '%s'? " file-name))
+                ;; Acknowledge the file modification to prevent Emacs's
+                ;; native `save-buffer' from triggering a second interactive
+                ;; prompt.
+                (set-visited-file-modtime)
+              ;; User aborted both options
+              (user-error
+               "Save aborted: Resolve external modifications manually")))))
+      ;; Proceed with the save safely outside the macro context
+      (buffer-guardian-save-buffer-maybe target-buffer))))
+
+;;;###autoload
 (defun buffer-guardian-save-buffer-maybe (&optional buffer)
   "Save BUFFER if it is visiting a file that is existing on the disk.
 By default, it only saves when the file exists on the disk."
@@ -531,7 +579,8 @@ By default, it only saves when the file exists on the disk."
                              "writable.")
                      file-name)))
 
-                 ((not (verify-visited-file-modtime (current-buffer)))
+                 ((and (not buffer-guardian--ignore-modified-externally)
+                       (not (verify-visited-file-modtime (current-buffer))))
                   (when buffer-guardian-verbose
                     (message (concat "[buffer-guardian] Warning: Automatic "
                                      "save skipped for '%s' because the file "
@@ -541,7 +590,8 @@ By default, it only saves when the file exists on the disk."
                  (t
                   (condition-case err
                       (progn
-                        (let ((inhibit-interaction t)
+                        (let ((inhibit-interaction
+                               buffer-guardian--inhibit-interaction)
                               (inhibit-message (not buffer-guardian-verbose))
                               (save-silently (not buffer-guardian-verbose)))
                           (ignore inhibit-interaction)

@@ -102,6 +102,22 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 * `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
+### Manual Saving Without Interruption
+
+While `buffer-guardian-mode` handles background saves automatically, you can explicitly force a safe, background-style save at any time using the `buffer-guardian-save-buffer` command.
+
+Replacing the default Emacs `save-buffer` with this command provides several direct improvements to your daily editing workflow:
+
+* It actively guards against overwriting external changes. If a file is modified outside of Emacs, the command gracefully intercepts the save operation and presents clear, interactive choices to discard your edits, force an overwrite, or cancel safely.
+* Running it inside temporary or isolated buffers like `org-src` (for Org mode source blocks) or `edit-indirect` (for Markdown code blocks) correctly commits changes straight back to the underlying parent file.
+
+To replace the standard Emacs save shortcut globally with this alternative, add the following snippet to your configuration:
+
+```elisp
+(keymap-global-set "C-x C-s" #'buffer-guardian-save-buffer)
+
+```
+
 ## Author and License
 
 The *buffer-guardian* Emacs package has been written by [James Cherti](https://www.jamescherti.com/) and is distributed under terms of the GNU General Public License version 3, or, at your choice, any later version.
