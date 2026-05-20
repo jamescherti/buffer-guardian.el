@@ -309,6 +309,8 @@ before the delay expires, the countdown resets to zero."
   :type 'number
   :group 'buffer-guardian)
 
+;;; Internal variables
+
 (defvar buffer-guardian--inhibit-interaction t
   "Internal variable to override `inhibit-interaction' behavior down stack.")
 
@@ -417,7 +419,8 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
            (buffer (when window
                      (window-buffer window))))
       (when (buffer-live-p buffer)
-        (buffer-guardian-save-buffer-maybe buffer)))))
+        (with-current-buffer buffer
+          (buffer-guardian-save-buffer-maybe buffer))))))
 
 (defun buffer-guardian--mouse-leave-buffer-hook ()
   "Save the current buffer when the mouse clicks on another buffer."
