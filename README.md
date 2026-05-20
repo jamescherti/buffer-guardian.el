@@ -24,13 +24,14 @@ Other features that are **disabled** by default:
 - Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-on-same-buffer-window-change`)
 - Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
 - Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
+- Intercept global save commands to automatically handle closing prompts. (Variable: `buffer-guardian-override-save-some-buffers`)
 - Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
 - Prevent saving files that do not exist on disk. (Variable: `buffer-guardian-inhibit-saving-nonexistent-files`)
 - Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
 - Ignore buffers whose names match specific regular expressions. (Variable: `buffer-guardian-exclude-regexps`)
 - Use custom predicate functions to determine if a buffer should be saved. (Variable: `buffer-guardian-predicate-functions`)
 
-(Buffer Guardian runs in the background without interrupting the workflow. For example, the package safely aborts the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. It also implements a debouncing mechanism that waits for absolute user inactivity before executing a global save, preventing editor freezes when trigger events fire rapidly like resizing a window. Additionally, it gracefully catches and logs errors if a third-party hook attempts to request user input, ensuring that the editor never freezes during an automatic background save.)
+(Buffer Guardian runs in the background without interrupting the workflow. For example, the package safely aborts the auto-save process if the file is read-only, if the file's parent directory does not exist, or if the file was modified externally. It also implements a dual-edge debouncing mechanism that fires an immediate synchronous save on the first trigger and a final trailing save when user activity stops, completely preventing editor freezes and saving race conditions. Additionally, it gracefully catches and logs errors if a third-party hook attempts to request user input, ensuring that the editor never freezes during an automatic background save.)
 
 ## Installation
 
@@ -54,6 +55,13 @@ To install **buffer-guardian** from MELPA:
 
   ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
   (buffer-guardian-verbose nil)
+
+  ;; Overwrite native save commands to bypass exit confirmation prompts
+  ;; Advise `save-some-buffers' to use `buffer-guardian' logic.
+  ;; When non-nil and `buffer-guardian-mode' is active, this overrides the
+  ;; arguments of `save-some-buffers' to enforce non-interactive saving and
+  ;; apply the package predicate rules.
+  (buffer-guardian-override-save-some-buffers nil)
 
   ;; Save all buffers after N seconds of user idle time. (Disabled by default)
   ;; (buffer-guardian-save-all-buffers-idle 30)
@@ -98,6 +106,7 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 
 ### Advanced
 
+* `buffer-guardian-override-save-some-buffers` (Default: `nil`): Overwrite `save-some-buffers` to enforce non-interactive execution and suppress native exit queries. For example, when this option is enabled, triggering commands like `save-buffers-kill-emacs` will cleanly write all modified file-visiting buffers to disk and close the editor without presenting interactive confirmation prompts.
 * `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
 * `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.

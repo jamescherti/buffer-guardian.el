@@ -309,6 +309,40 @@ before the delay expires, the countdown resets to zero."
   :type 'number
   :group 'buffer-guardian)
 
+(defun buffer-guardian--around-save-some-buffers (orig-fun &optional arg pred)
+  "Around advice to overwrite arguments passed to `save-some-buffers'.
+ORIG-FUN the advised function and its arguments.
+ARG and PRED are the arguments.
+Forces silent saving and applies the package predicate rules when
+`buffer-guardian-mode' is enabled."
+  (when (bound-and-true-p buffer-guardian-mode)
+    (buffer-guardian-save-all-buffers)
+
+    (setq arg t)
+
+    ;; The buffer guardian predicate replaces: t and nil
+    ;; t: certain non-file buffers will also be considered.
+    ;; nil: all the file-visiting buffers are considered.
+    (when (not (functionp pred))
+      (setq pred #'buffer-guardian--predicate)))
+
+  (funcall orig-fun arg pred))
+
+(defcustom buffer-guardian-override-save-some-buffers nil
+  "Advise `save-some-buffers' to use `buffer-guardian' logic.
+When non-nil and `buffer-guardian-mode' is active, this overrides the arguments
+of `save-some-buffers' to enforce non-interactive saving and apply the package
+predicate rules."
+  :type 'boolean
+  :group 'buffer-guardian
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (if (and value (bound-and-true-p buffer-guardian-mode))
+             (advice-add 'save-some-buffers :around
+                         #'buffer-guardian--around-save-some-buffers)
+           (advice-remove 'save-some-buffers
+                          #'buffer-guardian--around-save-some-buffers))))
+
 ;;; Internal variables
 
 (defvar buffer-guardian--inhibit-interaction t
@@ -657,6 +691,7 @@ BUFFER-LIST is the list of buffers."
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
                     buffer-guardian-save-all-buffers-trigger-hooks
+                    buffer-guardian-override-save-some-buffers
                     buffer-guardian-save-trigger-functions)))
     (dolist (setting settings)
       (funcall (or (get setting 'custom-set) #'set-default)
