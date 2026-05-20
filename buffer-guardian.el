@@ -466,12 +466,22 @@ OBJECT can be a frame or a window."
     (buffer-guardian--on-buffer-change object)))
 
 (defun buffer-guardian-save-all-buffers-debounced ()
-  "Debounced version of `buffer-guardian-save-all-buffers'."
-  (when buffer-guardian--debounce-timer
-    (cancel-timer buffer-guardian--debounce-timer))
+  "Debounced version of `buffer-guardian-save-all-buffers'.
+Executes the save immediately on the first call, then suppresses further
+saves until `buffer-guardian-debounce-delay' seconds have passed without
+any new calls."
+  (if buffer-guardian--debounce-timer
+      ;; We are in the cooldown period. Cancel the existing timer and start
+      ;; a new one to extend the suppression window.
+      (cancel-timer buffer-guardian--debounce-timer)
+    ;; First call: execute instantly, then start the cooldown timer.
+    (buffer-guardian-save-all-buffers))
+
   (setq buffer-guardian--debounce-timer
         (run-with-timer buffer-guardian-debounce-delay nil
-                        #'buffer-guardian-save-all-buffers)))
+                        (lambda ()
+                          (buffer-guardian-save-all-buffers)
+                          (setq buffer-guardian--debounce-timer nil)))))
 
 (defun buffer-guardian--window-configuration-change ()
   "Run on window configuration change."
