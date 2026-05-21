@@ -24,7 +24,7 @@ Other features that are **disabled** by default:
 - Save the buffer even if a window change results in the same buffer being selected. (Variable: `buffer-guardian-save-on-same-buffer-window-change`)
 - Save all file-visiting buffers periodically at a specific interval. (Variable: `buffer-guardian-save-all-buffers-interval`)
 - Save all file-visiting buffers after a period of user inactivity. (Variable: `buffer-guardian-save-all-buffers-idle`)
-- Intercept global save commands to automatically handle closing prompts. (Variable: `buffer-guardian-override-save-some-buffers`)
+- Pre-save buffers silently before global save and exit commands. (Variable: `buffer-guardian-override-save-some-buffers`)
 - Prevent auto-saving remote files. (Variable: `buffer-guardian-inhibit-saving-remote-files`)
 - Prevent saving files that do not exist on disk. (Variable: `buffer-guardian-inhibit-saving-nonexistent-files`)
 - Set a maximum buffer size limit for auto-saving. (Variable: `buffer-guardian-max-buffer-size`)
@@ -56,11 +56,11 @@ To install **buffer-guardian** from MELPA:
   ;; Non-nil to enable verbose mode to log when a buffer is automatically saved
   (buffer-guardian-verbose nil)
 
-  ;; Overwrite native save commands to bypass exit confirmation prompts
+  ;; Pre-save all package-managed buffers before native save commands run
   ;; Advise `save-some-buffers' to use `buffer-guardian' logic.
-  ;; When non-nil and `buffer-guardian-mode' is active, this overrides the
-  ;; arguments of `save-some-buffers' to enforce non-interactive saving and
-  ;; apply the package predicate rules.
+  ;; When non-nil and `buffer-guardian-mode' is active, this intercepts
+  ;; `save-some-buffers' to silently pre-save package-managed buffers before
+  ;; allowing the native command to run normally.
   (buffer-guardian-override-save-some-buffers nil)
 
   ;; Save all buffers after N seconds of user idle time. (Disabled by default)
@@ -106,7 +106,7 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 
 ### Advanced
 
-* `buffer-guardian-override-save-some-buffers` (Default: `nil`): Overwrite `save-some-buffers` to enforce non-interactive execution and suppress native exit queries. For example, when this option is enabled, triggering commands like `save-buffers-kill-emacs` will cleanly write all modified file-visiting buffers to disk and close the editor without presenting interactive confirmation prompts.
+* `buffer-guardian-override-save-some-buffers` (Default: `nil`): Advise `save-some-buffers` to execute a silent package-wide save before letting the native Emacs logic run. When this option is enabled, triggering commands like `save-buffers-kill-emacs` will cleanly write your modified project files to disk first, drastically minimizing or entirely bypassing the subsequent interactive prompts for those buffers.
 * `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
 * `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.

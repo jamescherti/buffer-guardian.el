@@ -310,29 +310,22 @@ before the delay expires, the countdown resets to zero."
   :group 'buffer-guardian)
 
 (defun buffer-guardian--around-save-some-buffers (orig-fun &optional arg pred)
-  "Around advice to overwrite arguments passed to `save-some-buffers'.
-ORIG-FUN the advised function and its arguments.
+  "Around advice for `save-some-buffers'.
+ORIG-FUN is the advised function.
 ARG and PRED are the arguments.
-Forces silent saving and applies the package predicate rules when
-`buffer-guardian-mode' is enabled."
-  (when (bound-and-true-p buffer-guardian-mode)
-    (buffer-guardian-save-all-buffers)
-
-    (setq arg t)
-
-    ;; The buffer guardian predicate replaces: t and nil
-    ;; t: certain non-file buffers will also be considered.
-    ;; nil: all the file-visiting buffers are considered.
-    (when (not (functionp pred))
-      (setq pred #'buffer-guardian--predicate)))
-
-  (funcall orig-fun arg pred))
+When `buffer-guardian-mode' is enabled, this silently saves all buffers
+handled by the package first, then calls the original function with its
+unmodified arguments to handle any remaining buffers normally."
+  (unwind-protect
+      (when (bound-and-true-p buffer-guardian-mode)
+        (buffer-guardian-save-all-buffers))
+    (funcall orig-fun arg pred)))
 
 (defcustom buffer-guardian-override-save-some-buffers nil
   "Advise `save-some-buffers' to use `buffer-guardian' logic.
-When non-nil and `buffer-guardian-mode' is active, this overrides the arguments
-of `save-some-buffers' to enforce non-interactive saving and apply the package
-predicate rules."
+When non-nil and `buffer-guardian-mode' is active, this intercepts
+`save-some-buffers' to silently pre-save package-managed buffers before allowing
+the native command to run normally."
   :type 'boolean
   :group 'buffer-guardian
   :set (lambda (symbol value)
