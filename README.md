@@ -106,7 +106,7 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 
 ### Advanced
 
-* `buffer-guardian-override-save-some-buffers` (Default: `nil`): Advise `save-some-buffers` to execute a silent package-wide save before letting the native Emacs logic run. When this option is enabled, triggering commands like `save-buffers-kill-emacs` will cleanly write your modified project files to disk first, drastically minimizing or entirely bypassing the subsequent interactive prompts for those buffers.
+- `buffer-guardian-override-save-some-buffers` (Default: `nil`): Advises `save-some-buffers` to execute a silent save of all buffers before letting the native `save-some-buffers` logic run. When this option is enabled, triggering commands like `save-buffers-kill-emacs` cleanly writes your modified project files to disk first, drastically minimizing or entirely bypassing subsequent interactive prompts for those buffers.
 * `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
 * `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
 * `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.

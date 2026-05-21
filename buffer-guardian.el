@@ -309,17 +309,16 @@ before the delay expires, the countdown resets to zero."
   :type 'number
   :group 'buffer-guardian)
 
-(defun buffer-guardian--around-save-some-buffers (orig-fun &optional arg pred)
+(defun buffer-guardian--around-save-some-buffers (orig-fun &rest args)
   "Around advice for `save-some-buffers'.
 ORIG-FUN is the advised function.
-ARG and PRED are the arguments.
+ARGS are the arguments.
 When `buffer-guardian-mode' is enabled, this silently saves all buffers
 handled by the package first, then calls the original function with its
 unmodified arguments to handle any remaining buffers normally."
-  (unwind-protect
-      (when (bound-and-true-p buffer-guardian-mode)
-        (buffer-guardian-save-all-buffers))
-    (funcall orig-fun arg pred)))
+  (when (bound-and-true-p buffer-guardian-mode)
+    (buffer-guardian-save-all-buffers))
+  (apply orig-fun args))
 
 (defcustom buffer-guardian-override-save-some-buffers nil
   "Advise `save-some-buffers' to use `buffer-guardian' logic.
