@@ -353,6 +353,20 @@ the native command to run normally."
            (advice-remove 'save-some-buffers
                           #'buffer-guardian--around-save-some-buffers))))
 
+(defcustom buffer-guardian-inhibit-save-on-completion t
+  "If non-nil, `buffer-guardian' saves buffers even if a completion is active.
+When set to nil, the package safely pauses background saves while completion
+menus (like Corfu) are visible."
+  :type 'boolean
+  :group 'buffer-guardian)
+
+(defcustom buffer-guardian-inhibit-save-on-popup nil
+  "If non-nil, `buffer-guardian' saves buffers even if a popup is active.
+When set to nil, the package safely pauses background saves while child frames
+are visible."
+  :type 'boolean
+  :group 'buffer-guardian)
+
 ;;; Internal variables
 
 (defvar buffer-guardian--inhibit-interaction t
@@ -372,6 +386,25 @@ the native command to run normally."
        (seq-some (lambda (regexp)
                    (string-match-p regexp filename))
                  buffer-guardian-exclude-regexps)))
+
+(defun buffer-guardian--completion-active-p ()
+  "Return non-nil if a completion menu is active.
+
+This function prevents a conflict where automatic background saves are triggered
+prematurely by completion frameworks like Corfu."
+  (or (bound-and-true-p corfu--candidates)
+      (bound-and-true-p completion-in-region-mode)))
+
+(defun buffer-guardian--popup-active-p ()
+  "Return non-nil if a temporary popup is active."
+  (when (fboundp 'frame-parent) ; Emacs > 26.1
+    (let ((current (selected-frame)))
+      (catch 'found
+        (dolist (frame (frame-list))
+          (when (and (frame-visible-p frame)
+                     (eq (frame-parent frame) current))
+            (throw 'found t)))
+        nil))))
 
 (defun buffer-guardian--predicate (&optional include-non-file-visiting)
   "Determine if the current buffer should be automatically saved.
@@ -512,23 +545,30 @@ OBJECT can be a frame or window."
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian--on-buffer-change object)))
 
+(defun buffer-guardian--execute-debounced-save ()
+  "Save all buffers if no popup is active, then reset the debounce timer.
+This prevents saving when temporary UI elements trigger layout hooks."
+  (when buffer-guardian--debounce-timer
+    (setq buffer-guardian--debounce-timer nil))
+  (when (and (or (not buffer-guardian-inhibit-save-on-completion)
+                 (not (buffer-guardian--completion-active-p)))
+             (or (not buffer-guardian-inhibit-save-on-popup)
+                 (not (buffer-guardian--popup-active-p))))
+    (buffer-guardian-save-all-buffers)))
+
 (defun buffer-guardian-save-all-buffers-debounced ()
   "Debounced version of `buffer-guardian-save-all-buffers'.
-Executes the save immediately on the first call, then suppresses further
-saves until `buffer-guardian-debounce-delay' seconds have passed without
-any new calls."
-  (if buffer-guardian--debounce-timer
-      ;; We are in the cooldown period. Cancel the existing timer and start
-      ;; a new one to extend the suppression window.
-      (cancel-timer buffer-guardian--debounce-timer)
-    ;; First call: execute instantly, then start the cooldown timer.
-    (buffer-guardian-save-all-buffers))
+Suppresses saves until `buffer-guardian-debounce-delay' seconds have
+passed without any new calls."
+  (when buffer-guardian--debounce-timer
+    ;; We are in the cooldown period. Cancel the existing timer and start
+    ;; a new one to extend the suppression window.
+    (cancel-timer buffer-guardian--debounce-timer))
 
   (setq buffer-guardian--debounce-timer
-        (run-with-timer buffer-guardian-debounce-delay nil
-                        (lambda ()
-                          (buffer-guardian-save-all-buffers)
-                          (setq buffer-guardian--debounce-timer nil)))))
+        (run-with-timer
+         buffer-guardian-debounce-delay nil
+         #'buffer-guardian--execute-debounced-save)))
 
 (defun buffer-guardian--window-configuration-change ()
   "Run on window configuration change."
@@ -711,4 +751,4 @@ BUFFER-LIST is the list of buffers."
 
 (provide 'buffer-guardian)
 
-;;; buffer-guardian.el ends here
+;;; buffer-guardian.el ends heres
