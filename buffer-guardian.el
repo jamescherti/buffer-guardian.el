@@ -751,4 +751,4 @@ BUFFER-LIST is the list of buffers."
 
 (provide 'buffer-guardian)
 
-;;; buffer-guardian.el ends heres
+;;; buffer-guardian.el ends here
