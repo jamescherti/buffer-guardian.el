@@ -548,8 +548,7 @@ OBJECT can be a frame or window."
 (defun buffer-guardian--execute-debounced-save ()
   "Save all buffers if no popup is active, then reset the debounce timer.
 This prevents saving when temporary UI elements trigger layout hooks."
-  (when buffer-guardian--debounce-timer
-    (setq buffer-guardian--debounce-timer nil))
+  (setq buffer-guardian--debounce-timer nil)
   (when (and (or (not buffer-guardian-inhibit-save-on-completion)
                  (not (buffer-guardian--completion-active-p)))
              (or (not buffer-guardian-inhibit-save-on-popup)
