@@ -310,7 +310,7 @@ buffers ensures modifications are committed back to the original parent buffer."
   :type 'boolean
   :group 'buffer-guardian)
 
-(defcustom buffer-guardian-debounce-delay 1.0
+(defcustom buffer-guardian-debounce-delay 0.6
   "Delay in seconds before saving after a trigger event (e.g., window change).
 
 This prevents excessive saving if events fire rapidly. Because Emacs is
