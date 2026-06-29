@@ -69,7 +69,7 @@ To install **buffer-guardian** from MELPA:
   ;; (buffer-guardian-save-all-buffers-idle 30)
 
   ;; Save all buffers every N seconds. (Disabled by default)
-  ;; (setq buffer-guardian-save-all-buffers-interval (* 60 30))
+  ;; (buffer-guardian-save-all-buffers-interval (* 60 30))
 
   :config
   (buffer-guardian-mode 1))
