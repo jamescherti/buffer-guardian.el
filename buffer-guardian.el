@@ -177,7 +177,7 @@ This hook executes in the context of the buffer that failed to save."
 
 (defcustom buffer-guardian-save-all-buffers-interval nil
   "Interval in seconds for automatically saving all buffers.
-This allows you to periodically save all file-visiting buffers at once,
+This allows periodically saving all file-visiting buffers at once,
 repeating the operation at the specified interval.
 
 If set to nil, this feature is disabled."
@@ -195,7 +195,7 @@ If set to nil, this feature is disabled."
 
 (defcustom buffer-guardian-save-all-buffers-idle nil
   "Seconds for automatically saving all buffers when the user is idle.
-This allows you to save all file-visiting buffers at once, repeating the
+This allows saving all file-visiting buffers at once, repeating the
 operation at the specified interval.
 
 If set to nil, this feature is disabled."
@@ -584,11 +584,11 @@ passed without any new calls."
 If BUFFER is omitted, it defaults to the current buffer.
 
 This command generally provides a non-interactive save. Unlike the default
-`save-buffer', it avoids interrupting your workflow with standard prompts.
+`save-buffer', it avoids interrupting the workflow with standard prompts.
 
 The only exception is if the file has been modified outside of Emacs. In that
-case, it will interactively prompt you to discard your edits and revert the
-buffer. If you decline, the save is safely aborted."
+case, it will interactively prompt to discard edits and revert the buffer.
+If declined, the save is safely aborted."
   (interactive)
   (let* ((initial-buffer (or buffer (current-buffer)))
          (target-buffer (or (buffer-base-buffer initial-buffer)
