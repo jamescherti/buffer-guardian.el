@@ -2,7 +2,7 @@
 
 ;; Author: James Cherti <https://www.jamescherti.com/contact/>
 ;; URL: https://github.com/jamescherti/jc-dev
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: maint
 ;; Version: 1.0.1
 ;; SPDX-License-Identifier: GPL-3.0-or-later
