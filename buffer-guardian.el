@@ -190,7 +190,7 @@ If set to nil, this feature is disabled."
            (setq buffer-guardian--save-all-buffers-timer nil))
          (when (and value (bound-and-true-p buffer-guardian-mode))
            (setq buffer-guardian--save-all-buffers-timer
-                 (run-with-timer value value #'buffer-guardian-save-all-buffers))))
+                 (run-with-timer value value #'buffer-guardian-save-all-buffers-maybe))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-save-all-buffers-idle nil
@@ -209,7 +209,7 @@ If set to nil, this feature is disabled."
          (when (and value (bound-and-true-p buffer-guardian-mode))
            (setq buffer-guardian--save-all-buffers-idle-timer
                  (run-with-idle-timer
-                  value value #'buffer-guardian-save-all-buffers))))
+                  value value #'buffer-guardian-save-all-buffers-maybe))))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-inhibit-saving-remote-files t
@@ -257,10 +257,10 @@ When any of these hooks run, all buffers are saved."
            (set-default symbol value)
            (when old-value
              (dolist (hook old-value)
-               (remove-hook hook #'buffer-guardian-save-all-buffers)))
+               (remove-hook hook #'buffer-guardian-save-all-buffers-maybe)))
            (when (bound-and-true-p buffer-guardian-mode)
              (dolist (hook value)
-               (add-hook hook #'buffer-guardian-save-all-buffers))))))
+               (add-hook hook #'buffer-guardian-save-all-buffers-maybe))))))
 
 (defvar buffer-guardian--list-advised-functions nil
   "Internal list of advised functions.")
@@ -334,8 +334,7 @@ ARGS are the arguments.
 When `buffer-guardian-mode' is enabled, this silently saves all buffers
 handled by the package first, then calls the original function with its
 unmodified arguments to handle any remaining buffers normally."
-  (when (bound-and-true-p buffer-guardian-mode)
-    (buffer-guardian-save-all-buffers))
+  (buffer-guardian-save-all-buffers-maybe)
   (apply orig-fun args))
 
 (defcustom buffer-guardian-override-save-some-buffers nil
@@ -552,7 +551,8 @@ This prevents saving when temporary UI elements trigger layout hooks."
   (when (and (or (not buffer-guardian-inhibit-save-on-completion)
                  (not (buffer-guardian--completion-active-p)))
              (or (not buffer-guardian-inhibit-save-on-popup)
-                 (not (buffer-guardian--popup-active-p))))
+                 (not (buffer-guardian--popup-active-p)))
+             (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian-save-all-buffers)))
 
 (defun buffer-guardian-save-all-buffers-debounced ()
@@ -715,16 +715,23 @@ By default, it only saves when the file exists on the disk."
                         (error-message-string err))))))))))
 
 ;;;###autoload
+(defun buffer-guardian-save-all-buffers-maybe (&optional buffer-list)
+  "Save all modified buffers that are visiting files that exist on the disk.
+BUFFER-LIST is the list of buffers.
+This function only saves buffers when the `buffer-guardian-mode' is enabled."
+  (when (bound-and-true-p buffer-guardian-mode)
+    (buffer-guardian-save-all-buffers buffer-list)))
+
+;;;###autoload
 (defun buffer-guardian-save-all-buffers (&optional buffer-list)
   "Save all modified buffers that are visiting files that exist on the disk.
 BUFFER-LIST is the list of buffers."
-  (when (bound-and-true-p buffer-guardian-mode)
-    (dolist (buffer (or buffer-list (buffer-list)))
-      (when (and (buffer-live-p buffer)
-                 (buffer-modified-p buffer)
-                 ;; Ignore indirect buffers
-                 (not (buffer-base-buffer buffer)))
-        (buffer-guardian-save-buffer-maybe buffer)))))
+  (dolist (buffer (or buffer-list (buffer-list)))
+    (when (and (buffer-live-p buffer)
+               (buffer-modified-p buffer)
+               ;; Ignore indirect buffers
+               (not (buffer-base-buffer buffer)))
+      (buffer-guardian-save-buffer-maybe buffer))))
 
 ;;; Mode
 
