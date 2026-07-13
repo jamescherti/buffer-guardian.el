@@ -10,6 +10,7 @@ The **buffer-guardian** Emacs package provides `buffer-guardian-mode`, a global 
 **By default, `buffer-guardian-mode` saves file-visiting buffers when:**
 - Switching to another buffer.
 - Switching to another window or frame.
+- A frame is closed.
 - The window configuration changes (e.g., window splits).
 - The minibuffer is opened.
 - Emacs loses focus.
@@ -81,37 +82,38 @@ You can customize **buffer-guardian** to fit your workflow. Below are the main c
 
 ### Triggers
 
-* `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when the Emacs frame loses focus.
-* `buffer-guardian-save-on-minibuffer-setup` (Default: `t`): Save when the minibuffer opens.
-* `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
-* `buffer-guardian-save-on-window-selection-change` (Default: `t`): Save when `window-selection-change-functions` runs.
-* `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
-* `buffer-guardian-save-on-same-buffer-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
+- `buffer-guardian-save-on-focus-loss` (Default: `t`): Save when the Emacs frame loses focus.
+- `buffer-guardian-save-on-minibuffer-setup` (Default: `t`): Save when the minibuffer opens.
+- `buffer-guardian-save-on-buffer-switch` (Default: `t`): Save when `window-buffer-change-functions` runs.
+- `buffer-guardian-save-on-window-selection-change` (Default: `t`): Save when `window-selection-change-functions` runs.
+- `buffer-guardian-save-on-window-configuration-change` (Default: `t`): Save when `window-configuration-change-hook` runs.
+- `buffer-guardian-save-on-frame-closure` (Default: `t`): Save when a frame is closed.
+- `buffer-guardian-save-on-same-buffer-window-change` (Default: `nil`): Save the buffer even if the window change results in the same buffer.
 
 ### Timers
 
-* `buffer-guardian-save-all-buffers-interval` (Default: `nil`): Save all buffers periodically every N seconds.
-* `buffer-guardian-save-all-buffers-idle` (Default: `nil`): Save all buffers after N seconds of user idle time.
+- `buffer-guardian-save-all-buffers-interval` (Default: `nil`): Save all buffers periodically every N seconds.
+- `buffer-guardian-save-all-buffers-idle` (Default: `nil`): Save all buffers after N seconds of user idle time.
 
 ### Exclusions and Filters
 
-* `buffer-guardian-inhibit-saving-remote-files` (Default: `t`): Prevent auto-saving remote files.
-* `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
-* `buffer-guardian-exclude-regexps` (Default: `nil`): A list of regular expressions for file names to ignore.
-* `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
-* `buffer-guardian-predicate-functions` (Default: `nil`): List of predicate functions to determine if a buffer should be saved.
+- `buffer-guardian-inhibit-saving-remote-files` (Default: `t`): Prevent auto-saving remote files.
+- `buffer-guardian-inhibit-saving-nonexistent-files` (Default: `t`): Prevent saving files that do not exist on disk.
+- `buffer-guardian-exclude-regexps` (Default: `nil`): A list of regular expressions for file names to ignore.
+- `buffer-guardian-max-buffer-size` (Default: `nil`): Maximum buffer size (in characters) to save. Set to 0 or nil to disable.
+- `buffer-guardian-predicate-functions` (Default: `nil`): List of predicate functions to determine if a buffer should be saved.
 
 ### Specialized Buffers (Inline Code Blocks)
 
-* `buffer-guardian-handle-org-src` (Default: `t`): Enable automatic saving for `org-src` buffers.
-* `buffer-guardian-handle-edit-indirect` (Default: `t`): Enable automatic saving for `edit-indirect` buffers.
+- `buffer-guardian-handle-org-src` (Default: `t`): Enable automatic saving for `org-src` buffers.
+- `buffer-guardian-handle-edit-indirect` (Default: `t`): Enable automatic saving for `edit-indirect` buffers.
 
 ### Advanced
 
 - `buffer-guardian-override-save-some-buffers` (Default: `nil`): Advises `save-some-buffers` to execute a silent save of all buffers before letting the native `save-some-buffers` logic run. When this option is enabled, triggering commands like `save-buffers-kill-emacs` cleanly writes your modified project files to disk first, drastically minimizing or entirely bypassing subsequent interactive prompts for those buffers.
-* `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
-* `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
-* `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
+- `buffer-guardian-save-all-buffers-trigger-hooks`: A list of hooks that trigger saving all modified buffers. Defaults to nil.
+- `buffer-guardian-save-trigger-functions`: A list of functions to advise. A `:before` advice will save the current buffer before these functions execute.
+- `buffer-guardian-verbose` (Default: `nil`): Enable logging messages when a buffer is saved.
 
 ### Manual Saving Without Interruption
 
@@ -119,8 +121,8 @@ While `buffer-guardian-mode` handles background saves automatically, you can exp
 
 Replacing the default Emacs `save-buffer` with this command provides several direct improvements to your daily editing workflow:
 
-* It actively guards against overwriting external changes. If a file is modified outside of Emacs, the command gracefully intercepts the save operation and presents clear, interactive choices to discard your edits, force an overwrite, or cancel safely.
-* Running it inside temporary or isolated buffers like `org-src` (for Org mode source blocks) or `edit-indirect` (for Markdown code blocks) correctly commits changes straight back to the underlying parent file.
+- It actively guards against overwriting external changes. If a file is modified outside of Emacs, the command gracefully intercepts the save operation and presents clear, interactive choices to discard your edits, force an overwrite, or cancel safely.
+- Running it inside temporary or isolated buffers like `org-src` (for Org mode source blocks) or `edit-indirect` (for Markdown code blocks) correctly commits changes straight back to the underlying parent file.
 
 To replace the standard Emacs save shortcut globally with this alternative, add the following snippet to your configuration:
 

@@ -164,6 +164,18 @@ This hook executes in the context of the buffer that failed to save."
                         #'buffer-guardian--window-configuration-change)))
   :group 'buffer-guardian)
 
+(defcustom buffer-guardian-save-on-frame-closure t
+  "Save the current buffer when a frame is closed."
+  :type 'boolean
+  :set (lambda (symbol value)
+         (set-default symbol value)
+         (if (and value (bound-and-true-p buffer-guardian-mode))
+             (add-hook 'delete-frame-functions
+                       #'buffer-guardian--delete-frame-functions)
+           (remove-hook 'delete-frame-functions
+                        #'buffer-guardian--delete-frame-functions)))
+  :group 'buffer-guardian)
+
 (defcustom buffer-guardian-save-on-same-buffer-window-change nil
   "Save the buffer even if the window change results in the same buffer."
   :type 'boolean
@@ -575,6 +587,16 @@ passed without any new calls."
              (bound-and-true-p buffer-guardian-mode))
     (buffer-guardian-save-all-buffers-debounced)))
 
+(defun buffer-guardian--delete-frame-functions (frame)
+  "Run on FRAME closure to save the current buffer."
+  (when (and buffer-guardian-save-on-frame-closure
+             (bound-and-true-p buffer-guardian-mode))
+    (let* ((window (frame-selected-window frame))
+           (buffer (when (window-live-p window)
+                     (window-buffer window))))
+      (when buffer
+        (buffer-guardian-save-buffer-maybe buffer)))))
+
 ;;; Functions
 
 ;;;###autoload
@@ -746,6 +768,7 @@ BUFFER-LIST is the list of buffers."
                     buffer-guardian-save-on-buffer-switch
                     buffer-guardian-save-on-window-selection-change
                     buffer-guardian-save-on-window-configuration-change
+                    buffer-guardian-save-on-frame-closure
                     buffer-guardian-save-all-buffers-interval
                     buffer-guardian-save-all-buffers-idle
                     buffer-guardian-save-all-buffers-trigger-hooks
