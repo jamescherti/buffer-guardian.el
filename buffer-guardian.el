@@ -594,7 +594,7 @@ passed without any new calls."
     (let* ((window (frame-selected-window frame))
            (buffer (when (window-live-p window)
                      (window-buffer window))))
-      (when buffer
+      (when (buffer-live-p buffer)
         (buffer-guardian-save-buffer-maybe buffer)))))
 
 ;;; Functions
