@@ -590,7 +590,23 @@ passed without any new calls."
 (defun buffer-guardian--delete-frame-functions (frame)
   "Run on FRAME closure to save the current buffer."
   (when (and buffer-guardian-save-on-frame-closure
-             (bound-and-true-p buffer-guardian-mode))
+             (bound-and-true-p buffer-guardian-mode)
+             ;; Packages like Corfu, Posframe, or Company create child frames to
+             ;; display floating popups or menus. These are attached to a main
+             ;; user frame and should not be counted as independent sessions.
+             (not (frame-parent frame))
+             ;; Tooltips can sometimes be implemented as separate native frames
+             ;; depending on the OS and Emacs build. We ignore them to prevent a
+             ;; transient hover effect from interfering with the frame count.
+             (not (frame-parameter frame 'tooltip))
+             ;; The daemon runs in the background on the "initial_terminal".
+             ;; This frame has no display and is never interacted with by the
+             ;; user. Excluding it ensures we only count actual emacsclient
+             ;; connections.
+             (not (equal (terminal-name (frame-terminal frame))
+                         "initial_terminal"))
+             ;; Visible
+             (frame-visible-p frame))
     (let* ((window (frame-selected-window frame))
            (buffer (when (window-live-p window)
                      (window-buffer window))))
