@@ -389,6 +389,8 @@ are visible."
 (defvar buffer-guardian--debounce-timer nil
   "Internal timer used to debounce save operations.")
 
+(defvar inhibit-interaction)
+
 ;;; Internal functions
 
 (defun buffer-guardian--exclude-regexps-p (filename)
@@ -667,7 +669,6 @@ By default, it only saves when the file exists on the disk."
         (let ((inhibit-message (not buffer-guardian-verbose))
               (save-silently (not buffer-guardian-verbose))
               (inhibit-interaction buffer-guardian--inhibit-interaction))
-          (ignore inhibit-interaction)
           (condition-case err
               (let ((predicate-result (buffer-guardian--predicate t)))
                 (when predicate-result
