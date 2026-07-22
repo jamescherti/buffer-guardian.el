@@ -70,8 +70,12 @@
   :prefix "buffer-guardian-")
 
 (defcustom buffer-guardian-verbose nil
-  "Enable verbose mode to log when a buffer is automatically saved."
-  :type 'boolean
+  "Enable verbose mode to log when a buffer is automatically saved.
+If set to \='inhibit-message, messages are logged to the *Messages* buffer
+without being displayed in the echo area."
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Enabled (echo area)" t)
+                 (const :tag "Enabled (Messages buffer only)" inhibit-message))
   :group 'buffer-guardian)
 
 (defcustom buffer-guardian-before-save-hook nil
@@ -393,6 +397,18 @@ are visible."
 
 ;;; Internal functions
 
+(defmacro buffer-guardian--message (format-string &rest args)
+  "Log a verbose message if `buffer-guardian-verbose' is non-nil.
+FORMAT-STRING is a string that specifies the message to log.
+ARGS are the arguments to format into FORMAT-STRING.
+If `buffer-guardian-verbose' is \='inhibit-message, the message is logged
+to the *Messages* buffer without being displayed in the echo area."
+  `(when buffer-guardian-verbose
+     (let ((inhibit-message (if (eq buffer-guardian-verbose 'inhibit-message)
+                                t
+                              inhibit-message)))
+       (message ,format-string ,@args))))
+
 (defun buffer-guardian--exclude-regexps-p (filename)
   "Return non-nil if FILENAME matches any of `buffer-guardian-exclude-regexps'."
   (and filename
@@ -489,21 +505,21 @@ Returns: \='org-src, \='edit-indirect, t, or nil."
          ;; Fast string check: Short-circuit if remote saving is disabled
          ((and buffer-guardian-inhibit-saving-remote-files
                (file-remote-p file-name))
-          (when buffer-guardian-verbose
-            (message (concat "[buffer-guardian] Warning: Automatic save "
-                             "skipped for '%s' because it is a remote file.")
-                     file-name))
+          (buffer-guardian--message
+           (concat "[buffer-guardian] Warning: Automatic save "
+                   "skipped for '%s' because it is a remote file.")
+           file-name)
           ;; Return nil
           nil)
 
          ;; Disk check: Verify file existence
          ((and buffer-guardian-inhibit-saving-nonexistent-files
                (not (file-exists-p file-name)))
-          (when buffer-guardian-verbose
-            (message (concat "[buffer-guardian] Warning: Automatic save "
-                             "skipped for '%s' because the file does not "
-                             "exist.")
-                     file-name))
+          (buffer-guardian--message
+           (concat "[buffer-guardian] Warning: Automatic save "
+                   "skipped for '%s' because the file does not "
+                   "exist.")
+           file-name)
           ;; Return nil
           nil)
 
@@ -693,8 +709,7 @@ By default, it only saves when the file exists on the disk."
   (let ((target-buffer (or buffer (current-buffer))))
     (when (buffer-live-p target-buffer)
       (with-current-buffer target-buffer
-        (let ((inhibit-message (not buffer-guardian-verbose))
-              (save-silently (not buffer-guardian-verbose))
+        (let ((save-silently (not buffer-guardian-verbose))
               (inhibit-interaction buffer-guardian--inhibit-interaction))
           (condition-case err
               (let ((predicate-result (buffer-guardian--predicate t)))
@@ -705,18 +720,17 @@ By default, it only saves when the file exists on the disk."
                     (run-hooks 'buffer-guardian-before-save-hook)
                     (org-edit-src-save)
                     (run-hooks 'buffer-guardian-after-save-hook)
-                    (when buffer-guardian-verbose
-                      (message "[buffer-guardian] Org-src Save: '%s'"
-                               (buffer-name))))
+                    (buffer-guardian--message
+                     "[buffer-guardian] Org-src Save: '%s'" (buffer-name)))
 
                    ((and (eq predicate-result 'edit-indirect)
                          (fboundp 'edit-indirect--commit))
                     (run-hooks 'buffer-guardian-before-save-hook)
                     (edit-indirect--commit)
                     (run-hooks 'buffer-guardian-after-save-hook)
-                    (when buffer-guardian-verbose
-                      (message "[buffer-guardian] Edit-indirect Save: '%s'"
-                               (buffer-name))))
+                    (buffer-guardian--message
+                     "[buffer-guardian] Edit-indirect Save: '%s'"
+                     (buffer-name)))
 
                    ;; File-visiting buffers
                    (t
@@ -728,44 +742,41 @@ By default, it only saves when the file exists on the disk."
                                        (file-name-directory file-name))))
                       (cond
                        ((not file-name)
-                        (when buffer-guardian-verbose
-                          (message
-                           (concat "[buffer-guardian] Automatic save skipped "
-                                   "for '%s' because it is not visiting a file")
-                           (buffer-name))))
+                        (buffer-guardian--message
+                         (concat "[buffer-guardian] Automatic save skipped "
+                                 "for '%s' because it is not visiting a file")
+                         (buffer-name)))
 
                        ;; Disk check: Missing parent directory.
                        ;; Skip saving to avoid Emacs prompting interactively
                        ;; to create the missing directory.
                        ((and file-dir (not (file-directory-p file-dir)))
-                        (when buffer-guardian-verbose
-                          (message
-                           (concat "[buffer-guardian] Warning: Automatic "
-                                   "save skipped for '%s' because the parent "
-                                   "directory does not exist.")
-                           file-name)))
+                        (buffer-guardian--message
+                         (concat "[buffer-guardian] Warning: Automatic "
+                                 "save skipped for '%s' because the parent "
+                                 "directory does not exist.")
+                         file-name))
 
                        ((not (file-writable-p file-name))
-                        (when buffer-guardian-verbose
-                          (message
-                           (concat "[buffer-guardian] Warning: Automatic save "
-                                   "skipped for '%s' because the file is not "
-                                   "writable.")
-                           file-name)))
+                        (buffer-guardian--message
+                         (concat "[buffer-guardian] Warning: Automatic save "
+                                 "skipped for '%s' because the file is not "
+                                 "writable.")
+                         file-name))
 
                        ((and (not buffer-guardian--ignore-modified-externally)
                              (not (verify-visited-file-modtime real-buffer)))
-                        (when buffer-guardian-verbose
-                          (message (concat "[buffer-guardian] Warning: Automatic "
-                                           "save skipped for '%s' because the file "
-                                           "was modified externally.")
-                                   file-name)))
+                        (buffer-guardian--message
+                         (concat "[buffer-guardian] Warning: Automatic save "
+                                 "skipped for '%s' because the file was "
+                                 "modified externally.")
+                         file-name))
 
                        (t
                         (run-hooks 'buffer-guardian-before-save-hook)
                         (save-buffer)
-                        (when buffer-guardian-verbose
-                          (message "[buffer-guardian] Save: '%s'" file-name))
+                        (buffer-guardian--message
+                         "[buffer-guardian] Save: '%s'" file-name)
                         (run-hooks 'buffer-guardian-after-save-hook))))))))
             (inhibited-interaction
              (run-hooks 'buffer-guardian-save-error-hook)
@@ -778,10 +789,10 @@ By default, it only saves when the file exists on the disk."
               (buffer-name)))
             (error
              (run-hooks 'buffer-guardian-save-error-hook)
-             (when buffer-guardian-verbose
-               (message "[buffer-guardian] Failed to save '%s': %s"
-                        (buffer-name)
-                        (error-message-string err))))))))))
+             (buffer-guardian--message
+              "[buffer-guardian] Failed to save '%s': %s"
+              (buffer-name)
+              (error-message-string err)))))))))
 
 ;;;###autoload
 (defun buffer-guardian-save-all-buffers-maybe (&optional buffer-list)
