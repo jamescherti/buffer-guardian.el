@@ -419,6 +419,31 @@ prematurely by completion frameworks like Corfu."
             (throw 'found t)))
         nil))))
 
+(defun buffer-guardian--real-file-buffer (&optional buffer)
+  "Return the actual file-visiting buffer for BUFFER.
+For archive subfiles, this returns the superior archive buffer."
+  (let ((buf (or buffer (current-buffer))))
+    (when (buffer-live-p buf)
+      (with-current-buffer buf
+        (cond
+         ((and (bound-and-true-p archive-subfile-mode)
+               (boundp 'archive-superior-buffer)
+               (buffer-live-p archive-superior-buffer))
+          archive-superior-buffer)
+         ((and (bound-and-true-p tar-subfile-mode)
+               (boundp 'tar-superior-buffer)
+               (buffer-live-p tar-superior-buffer))
+          tar-superior-buffer)
+         (t
+          buf))))))
+
+(defun buffer-guardian--real-file-name (&optional buffer)
+  "Return the actual file name for BUFFER.
+For archive subfiles, this returns the file name of the parent archive."
+  (let ((real-buf (buffer-guardian--real-file-buffer buffer)))
+    (when (buffer-live-p real-buf)
+      (buffer-file-name real-buf))))
+
 (defun buffer-guardian--predicate (&optional include-non-file-visiting)
   "Determine if the current buffer should be automatically saved.
 
@@ -426,7 +451,7 @@ If INCLUDE-NON-FILE-VISITING is non-nil, the predicate recognizes and returns
 specialized symbols for \='org-src and \='edit-indirect buffers.
 
 Returns: \='org-src, \='edit-indirect, t, or nil."
-  (let ((file-name (buffer-file-name (buffer-base-buffer))))
+  (let ((file-name (buffer-guardian--real-file-name (buffer-base-buffer))))
     (when (and (buffer-modified-p)
                (not (buffer-guardian--exclude-regexps-p file-name))
                (or (not buffer-guardian-max-buffer-size)
@@ -633,7 +658,9 @@ If declined, the save is safely aborted."
   (let* ((initial-buffer (or buffer (current-buffer)))
          (target-buffer (or (buffer-base-buffer initial-buffer)
                             initial-buffer))
-         (file-name (buffer-file-name target-buffer))
+         (real-buffer (buffer-guardian--real-file-buffer target-buffer))
+         (file-name (when (buffer-live-p real-buffer)
+                      (buffer-file-name real-buffer)))
          (buffer-guardian--inhibit-interaction nil)
          (buffer-guardian--ignore-modified-externally t)
          (buffer-guardian-inhibit-saving-nonexistent-files nil))
@@ -642,7 +669,7 @@ If declined, the save is safely aborted."
         (when (and file-name
                    (buffer-modified-p target-buffer)
                    (file-regular-p file-name)
-                   (not (verify-visited-file-modtime)))
+                   (not (verify-visited-file-modtime real-buffer)))
           ;; Was the file modified outside of Emacs? Revert buffer.
           (if (yes-or-no-p (format "Discard edits and reread from '%s'? "
                                    file-name))
@@ -693,7 +720,10 @@ By default, it only saves when the file exists on the disk."
 
                    ;; File-visiting buffers
                    (t
-                    (let* ((file-name (buffer-file-name (buffer-base-buffer)))
+                    (let* ((real-buffer (buffer-guardian--real-file-buffer
+                                         (buffer-base-buffer)))
+                           (file-name (when (buffer-live-p real-buffer)
+                                        (buffer-file-name real-buffer)))
                            (file-dir (when file-name
                                        (file-name-directory file-name))))
                       (cond
@@ -724,7 +754,7 @@ By default, it only saves when the file exists on the disk."
                            file-name)))
 
                        ((and (not buffer-guardian--ignore-modified-externally)
-                             (not (verify-visited-file-modtime (current-buffer))))
+                             (not (verify-visited-file-modtime real-buffer)))
                         (when buffer-guardian-verbose
                           (message (concat "[buffer-guardian] Warning: Automatic "
                                            "save skipped for '%s' because the file "

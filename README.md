@@ -17,7 +17,10 @@ The **buffer-guardian** Emacs package provides `buffer-guardian-mode`, a global 
 
 (Skip to: [Installation](#Installation))
 
-In addition to regular file-visiting buffers, `buffer-guardian-mode` also handles specialized editing buffers used for inline code blocks, such as `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown source code blocks). These temporary buffers are linked to an underlying parent buffer. Automatically saving them ensures that modifications made within these isolated code environments are correctly propagated back to the original Org or Markdown file.
+Beyond standard file-visiting buffers, `buffer-guardian-mode` provides built-in support for:
+
+* Isolated inline code buffers: It fully supports specialized editing environments like `org-src` (for Org mode) and `edit-indirect` (commonly used for Markdown code blocks). Since these temporary buffers are dynamically linked to a parent buffer, auto-saving them guarantees that your modifications are reliably propagated back to the main document.
+* Archive files, such as .zip and .tar archives: It saves files located inside compressed archives.
 
 The `buffer-guardian-mode` automatically detects active completion interfaces, such as `corfu` or `completion-in-region-mode`, and suppresses background save operations (controlled by the variable `buffer-guardian-inhibit-save-on-completion`, which defaults to t). This prevents premature auto-save triggers from invoking external hooks like automated code formatters, linters, or language server processes, which eliminates potential UI latency or race conditions.
 
