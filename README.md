@@ -5,7 +5,10 @@
 [![MELPA Stable](https://stable.melpa.org/packages/buffer-guardian-badge.svg)](https://stable.melpa.org/#/buffer-guardian)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The **buffer-guardian** Emacs package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
+- Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
+- License: GPL
+
+The **[buffer-guardian](https://github.com/jamescherti/buffer-guardian.el)** Emacs package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
 **By default, `buffer-guardian-mode` saves file-visiting buffers when:**
 - Switching to another buffer.
