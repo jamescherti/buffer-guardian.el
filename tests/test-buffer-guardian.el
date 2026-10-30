@@ -157,11 +157,11 @@ NAME is the buffer name and BODY is executed."
                  (lambda (&rest _)
                    (setq save-called t))))
         (let ((buffer-guardian-mode nil))
-          (buffer-guardian-save-all-buffers)
+          (buffer-guardian-save-all-buffers-maybe)
           (should-not save-called))
 
         (let ((buffer-guardian-mode t))
-          (buffer-guardian-save-all-buffers)
+          (buffer-guardian-save-all-buffers-maybe)
           (should save-called))))))
 
 (ert-deftest test-buffer-guardian-mouse-leave-trigger ()
