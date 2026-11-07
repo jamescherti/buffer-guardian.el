@@ -6,7 +6,7 @@
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
 - Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
-- License: GPL
+- License: GPL 3.0 or later
 
 The **[buffer-guardian](https://github.com/jamescherti/buffer-guardian.el)** Emacs package provides `buffer-guardian-mode`, a global mode that automatically saves buffers without requiring manual intervention.
 
